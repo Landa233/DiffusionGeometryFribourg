@@ -3,7 +3,7 @@ import numpy as np
 from functools import cached_property
 from diffusion_geometry.classes.main import DiffusionGeometry
 from diffusion_geometry.classes.tensors.base import compatible_batches
-from diffusion_geometry.classes.markov_triples import EmbeddedMarkovTriple
+from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple
 
 
 class MockDiffusionGeometry(DiffusionGeometry):
@@ -14,7 +14,7 @@ class MockDiffusionGeometry(DiffusionGeometry):
         # Create mock data for the triple
         function_basis = np.random.rand(n, n0)
         measure = np.ones(n) / n
-        embedding_coords = np.random.rand(n, d)
+        immersion_coords = np.random.rand(n, d)
 
         # Mock CdC: returns 0 (not used by overrides)
         def mock_cdc(f, h):
@@ -24,11 +24,11 @@ class MockDiffusionGeometry(DiffusionGeometry):
         def mock_reg(x, **kwargs):
             return x
 
-        triple = EmbeddedMarkovTriple(
+        triple = ImmersedMarkovTriple(
             function_basis=function_basis,
             measure=measure,
             carre_du_champ=mock_cdc,
-            embedding_coords=embedding_coords,
+            immersion_coords=immersion_coords,
             regularisation=mock_reg,
         )
 
@@ -126,12 +126,12 @@ class MockDiffusionGeometryV2(DiffusionGeometry):
         n1 = 3
         function_basis = np.random.rand(n, n0)
         measure = np.ones(n) / n
-        embedding_coords = np.random.rand(n, d)
-        triple = EmbeddedMarkovTriple(
+        immersion_coords = np.random.rand(n, d)
+        triple = ImmersedMarkovTriple(
             function_basis=function_basis,
             measure=measure,
             carre_du_champ=lambda f, h: np.zeros_like(f),
-            embedding_coords=embedding_coords,
+            immersion_coords=immersion_coords,
             regularise=lambda x, **kw: x,
         )
         super().__init__(triple=triple, n_coefficients=n1)

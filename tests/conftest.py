@@ -45,7 +45,7 @@ def setup_geom(request):
     knn_bandwidth = min(8, knn_kernel)
     return DiffusionGeometry.from_point_cloud(
         data_matrix=data,
-        embedding_coords=data,
+        immersion_coords=data,
         n_function_basis=n0,
         n_coefficients=n1,
         knn_kernel=knn_kernel,

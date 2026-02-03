@@ -81,7 +81,7 @@ The `DiffusionGeometry` class is the central entry point. It manages the spectra
 dg = DiffusionGeometry.from_point_cloud(data)
 
 # Or initialize from a pre-computed graph/kernel
-dg = DiffusionGeometry.from_knn_graph(indices, distances, embedding)
+dg = DiffusionGeometry.from_knn_graph(indices, distances, immersion)
 ```
 
 ### 2. Tensor Objects

@@ -5,7 +5,7 @@ import numpy as np
 from opt_einsum import contract
 
 from diffusion_geometry.src import diffusion_process
-from diffusion_geometry.classes.markov_triples import EmbeddedMarkovTriple, MarkovTriple
+from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple, MarkovTriple
 from diffusion_geometry.classes.symmetric_kernel import SymmetricKernelConstructor
 from diffusion_geometry.src.regularise import (
     regularise_diffusion,
@@ -39,7 +39,7 @@ class DiffusionGeometry:
     This class provides a global coordinate-free representation of differential
     operators (Laplacian, exterior derivative, Hessian, etc.) by expanding all
     objects in a basis of coefficient functions {φ_i} and the derivatives of
-    the embedding coordinates.
+    the immersion/embedding coordinates.
 
     Given coefficient functions {φ_i} of the Laplacian (ordered by ascending
     eigenvalues), the Dirichlet energy E(φ_i) increases with i. Restricting to
@@ -49,7 +49,7 @@ class DiffusionGeometry:
 
     def __init__(
         self,
-        triple: EmbeddedMarkovTriple,
+        triple: ImmersedMarkovTriple,
         **kwargs,
     ) -> None:
         """
@@ -57,8 +57,8 @@ class DiffusionGeometry:
 
         Parameters
         ----------
-        triple : EmbeddedMarkovTriple
-            The underlying Markov triple containing the kernel, measure, function basis, and embedding coordinates.
+        triple : ImmersedMarkovTriple
+            The underlying Markov triple containing the kernel, measure, function basis, and immersion coordinates.
         **kwargs : dict, optional
             Additional configuration parameters:
             - n_coefficients (int, optional): Number of coefficients for tensor expansions.
@@ -102,8 +102,8 @@ class DiffusionGeometry:
         return self.triple.dim
 
     @property
-    def embedding_coords(self) -> np.ndarray:
-        return self.triple.embedding_coords
+    def immersion_coords(self) -> np.ndarray:
+        return self.triple.immersion_coords
 
     @property
     def function_basis(self) -> np.ndarray:
@@ -126,7 +126,7 @@ class DiffusionGeometry:
         cls,
         nbr_indices: np.ndarray,
         kernel: np.ndarray,
-        embedding_coords: np.ndarray,
+        immersion_coords: np.ndarray,
         **kwargs,
     ) -> "DiffusionGeometry":
         """
@@ -138,7 +138,7 @@ class DiffusionGeometry:
             Indices of the k-nearest neighbours for each point.
         kernel : np.ndarray
             The kernel weights for the edges defined by nbr_indices.
-        embedding_coords : np.ndarray
+        immersion_coords : np.ndarray
             Coordinates of the data points.
         **kwargs : dict, optional
             Additional configuration parameters:
@@ -200,16 +200,16 @@ class DiffusionGeometry:
         function_basis = constructor.resolve_function_basis(
             n_function_basis, function_basis
         )
-        embedding_coords = constructor.resolve_embedding(
-            regularise, data_matrix, embedding_coords
+        immersion_coords = constructor.resolve_immersion(
+            regularise, data_matrix, immersion_coords
         )
 
         # Create the EmbeddedMarkovTriple with all this data
-        triple = EmbeddedMarkovTriple(
+        triple = ImmersedMarkovTriple(
             function_basis=function_basis,
             measure=measure,
             carre_du_champ=cdc,
-            embedding_coords=embedding_coords,
+            immersion_coords=immersion_coords,
             data_matrix=data_matrix,
             regularise=regularise,
         )
@@ -239,7 +239,7 @@ class DiffusionGeometry:
             Distances to the k-nearest neighbours.
         **kwargs : dict, optional
             Additional configuration parameters:
-            - embedding_coords (np.ndarray, optional): Coordinates of the data points.
+            - immersion_coords (np.ndarray, optional): Coordinates of the data points.
             - n_function_basis (int, default=50): Number of coefficient functions.
             - n_coefficients (int, optional): Number of coefficients.
             - regularisation_method (str, default='diffusion'): Regularisation method.
@@ -254,7 +254,7 @@ class DiffusionGeometry:
         c = kwargs.get("c", 0.0)
         bandwidth_variability = kwargs.get("bandwidth_variability", -0.5)
         knn_bandwidth = kwargs.get("knn_bandwidth", 8)
-        embedding_coords = kwargs.pop("embedding_coords", None)
+        immersion_coords = kwargs.pop("immersion_coords", None)
 
         kernel, bandwidths = diffusion_process.markov_chain(
             nbr_distances, nbr_indices, c, bandwidth_variability, knn_bandwidth
@@ -262,7 +262,7 @@ class DiffusionGeometry:
         return cls.from_knn_kernel(
             nbr_indices=nbr_indices,
             kernel=kernel,
-            embedding_coords=embedding_coords,
+            immersion_coords=immersion_coords,
             **kwargs,
         )
 
@@ -283,7 +283,7 @@ class DiffusionGeometry:
             Additional configuration parameters:
             - n_function_basis (int, default=50): Number of coefficient functions.
             - n_coefficients (int, optional): Number of coefficients.
-            - embedding_coords (np.ndarray, optional): Explicit coordinates if different from data.
+            - immersion_coords (np.ndarray, optional): Explicit coordinates if different from data.
             - knn_kernel (int, default=32): Number of neighbours for graph construction.
             - c (float, default=0.0): Parameter for Markov chain construction.
             - bandwidth_variability (float, default=-0.5): Parameter for bandwidth variability.
@@ -311,7 +311,7 @@ class DiffusionGeometry:
         cls,
         edge_index: np.ndarray,
         kernel: np.ndarray,
-        embedding_coords: np.ndarray,
+        immersion_coords: np.ndarray,
         **kwargs,
     ) -> "DiffusionGeometry":
         """
@@ -323,7 +323,7 @@ class DiffusionGeometry:
             The edge indices of the graph (2, n_edges).
         kernel : np.ndarray
             The kernel weights for the edges.
-        embedding_coords : np.ndarray
+        immersion_coords : np.ndarray
             Coordinates of the nodes.
         **kwargs : dict, optional
             Additional configuration parameters:
@@ -341,7 +341,7 @@ class DiffusionGeometry:
         function_basis = kwargs.get("function_basis")
         use_mean_centres = kwargs.get("use_mean_centres", False)
 
-        n = embedding_coords.shape[0]
+        n = immersion_coords.shape[0]
         if measure is None:
             measure = np.ones(n) / n
         if function_basis is None:
@@ -357,11 +357,11 @@ class DiffusionGeometry:
                 use_mean_centres=use_mean_centres,
             )
 
-        triple = EmbeddedMarkovTriple(
+        triple = ImmersedMarkovTriple(
             function_basis=function_basis,
             measure=measure,
             carre_du_champ=cdc,
-            embedding_coords=embedding_coords,
+            immersion_coords=immersion_coords,
         )
 
         return cls(
@@ -387,20 +387,20 @@ class DiffusionGeometry:
             The edge indices of the graph (2, n_edges).
         **kwargs : dict, optional
             Additional configuration parameters:
-            - embedding_coords (np.ndarray, optional): Coordinates, defaults to identity.
+            - immersion_coords (np.ndarray, optional): Coordinates, defaults to identity.
             - rcond (float, default=1e-5): Cutoff for spectral operations.
             - Other arguments passed to from_graph_kernel.
         """
-        embedding_coords = kwargs.pop("embedding_coords", None)
+        immersion_coords = kwargs.pop("immersion_coords", None)
 
         edge_index = np.asarray(edge_index)
 
-        # Determine n and embedding_coords if necessary
-        if embedding_coords is not None:
-            n = embedding_coords.shape[0]
+        # Determine n and immersion_coords if necessary
+        if immersion_coords is not None:
+            n = immersion_coords.shape[0]
         else:
             n = int(edge_index.max()) + 1
-            embedding_coords = np.eye(n)
+            immersion_coords = np.eye(n)
 
         # Compute in-degrees (number of incoming edges for each node)
         # edge_index[1] contains the target nodes i
@@ -419,7 +419,7 @@ class DiffusionGeometry:
         return cls.from_graph_kernel(
             edge_index=edge_index,
             kernel=edge_weights,
-            embedding_coords=embedding_coords,
+            immersion_coords=immersion_coords,
             **kwargs,
         )
 
@@ -710,7 +710,7 @@ class DiffusionGeometry:
         """
         hess = hessian.hessian_functions(
             self.triple.function_basis,
-            self.triple.embedding_coords,
+            self.triple.immersion_coords,
             self.backend.gamma_coords_regularised,
             # this is the only use of gamma_mixed_regularised so we do not cache it
             self.triple.regularise(self.backend.gamma_mixed),
@@ -738,7 +738,7 @@ class DiffusionGeometry:
         """
         weak_tensor = lie_bracket.lie_bracket_weak(
             self.triple.function_basis,
-            self.triple.embedding_coords,
+            self.triple.immersion_coords,
             self.backend.gamma_coords,
             self.triple.measure,
             self.n_coefficients,

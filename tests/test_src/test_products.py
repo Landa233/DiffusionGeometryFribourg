@@ -35,7 +35,7 @@ def test_wedge_operator():
 
     dg = DiffusionGeometry.from_point_cloud(
         data_matrix=point_cloud,
-        embedding_coords=point_cloud,
+        immersion_coords=point_cloud,
         n_function_basis=n0,
         n_coefficients=n1,
         knn_kernel=knn_kernel,
@@ -78,7 +78,7 @@ def test_wedge_pure_forms():
 
     dg = DiffusionGeometry.from_point_cloud(
         data_matrix=data,
-        embedding_coords=data,
+        immersion_coords=data,
         n_function_basis=n0,
         n_coefficients=n1,
         knn_kernel=knn_kernel,
@@ -133,7 +133,7 @@ def test_operator_overloading():
 
     dg = DiffusionGeometry.from_point_cloud(
         data_matrix=data,
-        embedding_coords=data,
+        immersion_coords=data,
         n_function_basis=n0,
         n_coefficients=n1,
         knn_kernel=knn_kernel,

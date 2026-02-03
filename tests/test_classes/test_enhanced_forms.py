@@ -74,7 +74,7 @@ def test_function_multiplication_division():
     data = np.random.rand(50, 2)  # Increase size to avoid k-neighbors issue
     dg = DiffusionGeometry.from_point_cloud(
         data_matrix=data,
-        embedding_coords=data,
+        immersion_coords=data,
         n_function_basis=10,
         n_coefficients=8,
         knn_kernel=min(16, data.shape[0] - 1),
@@ -119,7 +119,7 @@ def test_form_error_handling():
     data = np.random.rand(40, 2)  # Increase size
     dg = DiffusionGeometry.from_point_cloud(
         data_matrix=data,
-        embedding_coords=data,
+        immersion_coords=data,
         n_function_basis=8,
         n_coefficients=6,
         knn_kernel=min(16, data.shape[0] - 1),

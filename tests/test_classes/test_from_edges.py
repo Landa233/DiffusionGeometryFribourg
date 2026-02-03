@@ -18,8 +18,8 @@ def test_from_edges_cycle_graph():
     assert dg.n == 3
     assert np.allclose(dg.measure, np.ones(3))
 
-    # Check embedding coords default to eye(3)
-    assert np.allclose(dg.embedding_coords, np.eye(3))
+    # Check immersion coords default to eye(3)
+    assert np.allclose(dg.immersion_coords, np.eye(3))
 
     # Check simple function
     f = np.array([1.0, 2.0, 3.0])
@@ -41,10 +41,10 @@ def test_from_edges_custom_embedding():
     edge_index = np.array([[0, 1], [1, 0]])
     coords = np.array([[0.0, 0.0], [1.0, 1.0]])
 
-    dg = DiffusionGeometry.from_edges(edge_index, embedding_coords=coords)
+    dg = DiffusionGeometry.from_edges(edge_index, immersion_coords=coords)
 
     assert dg.n == 2
-    assert np.allclose(dg.embedding_coords, coords)
+    assert np.allclose(dg.immersion_coords, coords)
     assert np.allclose(dg.measure, np.ones(2))  # degrees are 1
 
 

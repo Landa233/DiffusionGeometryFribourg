@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 from diffusion_geometry.src import carre_du_champ, hessian
 from .base import GeometryEngine
-from .markov_triples import EmbeddedMarkovTriple
+from .markov_triples import ImmersedMarkovTriple
 
 
 class DiffusionGeometryBackend(GeometryEngine):
@@ -12,7 +12,7 @@ class DiffusionGeometryBackend(GeometryEngine):
     Backend engine for computing Diffusion Geometry tensors.
     """
 
-    def __init__(self, data: EmbeddedMarkovTriple, xp=None):
+    def __init__(self, data: ImmersedMarkovTriple, xp=None):
         super().__init__(xp=xp)
         self.triple = data
 
@@ -32,7 +32,7 @@ class DiffusionGeometryBackend(GeometryEngine):
     @cached_property
     def gamma_coords(self) -> np.ndarray:
         """
-        Carré du champ tensor of the embedding coordinates.
+        Carré du champ tensor of the immersion coordinates.
         Γ(x_i, x_j)
 
         Returns
@@ -41,13 +41,13 @@ class DiffusionGeometryBackend(GeometryEngine):
             Carré du champ tensor. Shape: [n, dim, dim]
         """
         return self.triple.cdc(
-            self.triple.embedding_coords, self.triple.embedding_coords
+            self.triple.immersion_coords, self.triple.immersion_coords
         )
 
     @cached_property
     def gamma_coords_regularised(self) -> np.ndarray:
         """
-        Compute the regularised carré du champ tensor of embedding_coords functions.
+        Compute the regularised carré du champ tensor of immersion_coords functions.
         Gamma(x_i, x_j)
 
         WARNING: this will lose positive semi-definiteness and so should not be used
@@ -63,7 +63,7 @@ class DiffusionGeometryBackend(GeometryEngine):
     @cached_property
     def gamma_mixed(self) -> np.ndarray:
         """
-        Carré du champ tensor of the embedding coordinates and coefficient functions.
+        Carré du champ tensor of the immersion coordinates and coefficient functions.
         Γ(x_i, φ_j)
 
         Returns
@@ -71,12 +71,12 @@ class DiffusionGeometryBackend(GeometryEngine):
         CdC : np.ndarray
             Carré du champ tensor. Shape: [n, dim, n_function_basis]
         """
-        return self.triple.cdc(self.triple.embedding_coords, self.triple.function_basis)
+        return self.triple.cdc(self.triple.immersion_coords, self.triple.function_basis)
 
     @cached_property
     def gamma_ambient(self) -> np.ndarray:
         """
-        Carré du champ tensor of embedding_coords functions
+        Carré du champ tensor of immersion_coords functions
         and ambient coordinates.
         Gamma(x_i, x_j)
 
@@ -89,7 +89,7 @@ class DiffusionGeometryBackend(GeometryEngine):
             return self.gamma_coords
         else:
             return self.triple.cdc(
-                self.triple.data_matrix, self.triple.embedding_coords
+                self.triple.data_matrix, self.triple.immersion_coords
             )
 
     @lru_cache(maxsize=None)
@@ -115,7 +115,7 @@ class DiffusionGeometryBackend(GeometryEngine):
         """
         hess = hessian.hessian_functions(
             self.triple.function_basis,
-            self.triple.embedding_coords,
+            self.triple.immersion_coords,
             self.gamma_coords_regularised,
             # this is the only use of gamma_mixed_regularised so we do not cache it
             self.triple.regularise(self.gamma_mixed),
@@ -130,7 +130,7 @@ class DiffusionGeometryBackend(GeometryEngine):
         Regularised.
         """
         hess = hessian.hessian_coords(
-            self.triple.embedding_coords,
+            self.triple.immersion_coords,
             self.gamma_coords_regularised,
             cdc=self.triple.cdc,
         )

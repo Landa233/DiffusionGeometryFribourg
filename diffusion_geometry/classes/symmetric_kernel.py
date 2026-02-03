@@ -11,7 +11,7 @@ class SymmetricKernelConstructor:
     resolve_measure: if μ is not given, we use the stationary distribution of the Markov chain.
     resolve_function_basis: if {φ_i} is not given, we compute the first n_function_basis
         coefficient functions of the Markov chain.
-    resolve_embedding: if embedding_coords is not given, we compute them by regularising data_matrix.
+    resolve_immersion: if immersion_coords is not given, we compute them by regularising data_matrix.
     """
 
     def __init__(
@@ -68,22 +68,22 @@ class SymmetricKernelConstructor:
             )
         return np.asarray(function_basis)
 
-    def resolve_embedding(
+    def resolve_immersion(
         self,
         regularise: Callable,
         data_matrix: Optional[np.ndarray] = None,
-        embedding_coords: Optional[np.ndarray] = None,
+        immersion_coords: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
-        Resolves embedding coordinates.
+        Resolves immersion coordinates.
         If missing, computes them by regularising data_matrix.
         """
-        if embedding_coords is not None:
-            return np.asarray(embedding_coords)
+        if immersion_coords is not None:
+            return np.asarray(immersion_coords)
 
         if data_matrix is None:
-            # We have neither embedding_coords nor data_matrix
-            raise ValueError("data_matrix and/or embedding_coords must be provided.")
+            # We have neither immersion_coords nor data_matrix
+            raise ValueError("data_matrix and/or immersion_coords must be provided.")
 
-        # Compute embedding coords by regularising data_matrix
+        # Compute immersion coords by regularising data_matrix
         return regularise(np.asarray(data_matrix))

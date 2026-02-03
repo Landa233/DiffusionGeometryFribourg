@@ -85,9 +85,10 @@ class Tensor02(Tensor):
         ), "to_ambient only supports unbatched Tensor02 objects."
 
         # Get tensor data in pointwise components
+        # TODO: this is not correct - use ambient coords
         data = self.to_pointwise_basis().reshape(self.dg.n, self.dg.dim, self.dg.dim)
         data = self.to_pointwise_basis().reshape(self.dg.n, self.dg.dim, self.dg.dim)
-        gamma = self.dg.triple.cdc(self.dg.embedding_coords, self.dg.embedding_coords)
+        gamma = self.dg.triple.cdc(self.dg.immersion_coords, self.dg.immersion_coords)
         gamma = self.dg._regularise(gamma)
 
         # Raise both covariant indices: T_{ij} -> γ^{αi} γ^{βj} T_{ij}

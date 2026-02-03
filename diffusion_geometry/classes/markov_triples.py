@@ -4,7 +4,8 @@ import numpy as np
 
 class MarkovTriple:
     """
-    Data container for the Markov Triple (M, mu, K).
+    Data container for the Markov Triple (M, μ, Γ) and function algebra A,
+    which are the basic objects in diffusion geometry.
     """
 
     def __init__(
@@ -29,9 +30,11 @@ class MarkovTriple:
         return self._regularise(x)
 
 
-class EmbeddedMarkovTriple(MarkovTriple):
+class ImmersedMarkovTriple(MarkovTriple):
     """
-    Markov Triple with an embedding into Euclidean space.
+    Markov Triple with an immersion into Euclidean space. The pullback of the
+    immersion coordinates generate the tensor spaces as a module over the function
+    algebra A.
     """
 
     def __init__(
@@ -39,7 +42,7 @@ class EmbeddedMarkovTriple(MarkovTriple):
         function_basis: np.ndarray,
         measure: np.ndarray,
         carre_du_champ: Callable[[np.ndarray, np.ndarray], np.ndarray],
-        embedding_coords: np.ndarray,
+        immersion_coords: np.ndarray,
         data_matrix: Optional[np.ndarray] = None,
         regularise: Optional[Callable[[np.ndarray], np.ndarray]] = None,
     ):
@@ -49,6 +52,6 @@ class EmbeddedMarkovTriple(MarkovTriple):
             carre_du_champ=carre_du_champ,
             regularise=regularise,
         )
-        self.embedding_coords = embedding_coords
+        self.immersion_coords = immersion_coords
         self.data_matrix = data_matrix
-        self.dim = self.embedding_coords.shape[1]
+        self.dim = self.immersion_coords.shape[1]
