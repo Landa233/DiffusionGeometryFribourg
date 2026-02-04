@@ -29,7 +29,7 @@ class Tensor02SymSpace(BaseTensorSpace):
         """
         Pointwise metric components for symmetric (0,2)-tensors.
         """
-        return carre_du_champ.gamma_02_sym(self.dg.backend.gamma_coords)
+        return carre_du_champ.gamma_02_sym(self.dg.cache.gamma_coords)
 
     def wrap(self, coeffs: "np.ndarray") -> "Tensor02Sym":
         from ..tensors import Tensor02Sym

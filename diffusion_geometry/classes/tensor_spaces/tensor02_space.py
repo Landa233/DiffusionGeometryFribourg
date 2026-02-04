@@ -30,7 +30,7 @@ class Tensor02Space(BaseTensorSpace):
         """
         Pointwise carré du champ components for (0,2)-tensors, Γ(dxᵢ ⊗ dxⱼ, dxₖ ⊗ dxₗ) = Γⁱᵏ(x) Γʲˡ(x).
         """
-        return carre_du_champ.gamma_02(self.dg.backend.gamma_coords)
+        return carre_du_champ.gamma_02(self.dg.cache.gamma_coords)
 
     def wrap(self, coeffs: "np.ndarray") -> "Tensor02":
         from ..tensors import Tensor02

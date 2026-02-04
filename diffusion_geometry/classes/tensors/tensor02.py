@@ -141,7 +141,7 @@ class Tensor02(Tensor):
         Yc = Y.coeffs.reshape(self.batch_shape + (n1, d))  # (..., i2, j2)
 
         U = self.dg.function_basis[:, :n1]  # (n, n1)
-        Gamma = self.dg.backend.gamma_coords  # (n, d, d)
+        Gamma = self.dg.cache.gamma_coords  # (n, d, d)
         # α_abc X_ij Y_IJ φ_a φ_i φ_I Γ(x_b, φ_j) Γ(x_c, x_J)
         # Shape: (..., n1, d, d), (..., n1, d), (..., n1, d), (n, n1), (n, n1), (n, n1), (n, d, d), (n, d, d) -> (..., n)
         result = contract(
@@ -185,7 +185,7 @@ class Tensor02(Tensor):
 
         # Backend components
         U = dg.function_basis[:, :n1]  # (p,a)
-        Gamma = self.dg.backend.gamma_coords  # (p,b,j)
+        Gamma = self.dg.cache.gamma_coords  # (p,b,j)
         mu = dg.measure  # (p,)
 
         # Compute weak 4-tensor:

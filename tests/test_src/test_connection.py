@@ -10,9 +10,9 @@ def test_levi_civita_02_weak(setup_geom):
     lc_02_weak_computed = dg.levi_civita.weak
     u_n1, gamma_mixed_n1, gamma_coords, hessian_coords, measure = (
         dg.function_basis[:, :n1],
-        dg.backend.gamma_mixed[:, :, :n1],
-        dg.backend.gamma_coords,
-        dg.backend.hessian_coords,
+        dg.cache.gamma_mixed[:, :, :n1],
+        dg.cache.gamma_coords,
+        dg.cache.hessian_coords,
         dg.measure,
     )
 

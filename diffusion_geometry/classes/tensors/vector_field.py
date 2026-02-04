@@ -161,7 +161,7 @@ class VectorField(Tensor):
             self.coeffs.reshape(self.dg.n_coefficients, self.dg.dim),
             self.dg.function_basis,
             self.dg.function_basis[:, : self.dg.n_coefficients],
-            self.dg.backend.gamma_mixed,
+            self.dg.cache.gamma_mixed,
             self.dg.measure,
         )
 

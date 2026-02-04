@@ -29,7 +29,7 @@ class VectorFieldSpace(BaseTensorSpace):
         """
         Pointwise carré du champ components for vector fields, Γ(dxᵢ, dxⱼ).
         """
-        return self.dg.backend.gamma_coords
+        return self.dg.cache.gamma_coords
 
     def wrap(self, coeffs: "np.ndarray") -> "VectorField":
         from ..tensors import VectorField

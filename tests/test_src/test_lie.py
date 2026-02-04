@@ -11,7 +11,7 @@ def test_lie_bracket_weak(setup_geom):
     u_n1, measure, gamma_coords = (
         dg.function_basis[:, :n1],
         dg.measure,
-        dg.backend.gamma_coords,
+        dg.cache.gamma_coords,
     )
     product = u_n1[:, :, None, None] * gamma_coords[:, None, :, :]
     gamma_comp_lie = dg.triple.cdc(

@@ -26,7 +26,7 @@ def test_g_k(setup_geom, k):
 
     g_computed = dg.form_space(k).metric
     u_n1 = dg.function_basis[:, :n1]
-    _, compound_gamma = dg.backend.gamma_coords_compound(k)
+    _, compound_gamma = dg.cache.gamma_coords_compound(k)
     Ck = int(comb(d, k))
 
     p_sel = sample_indices(n)

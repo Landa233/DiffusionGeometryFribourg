@@ -42,7 +42,7 @@ def geodesic_distances_function(dg, index, reg=False, num_subsample=None):
     eps = 1e-10  # floor for small/negative eigenvalues
 
     # Ambient distance
-    data = dg.backend.data_matrix
+    data = dg.cache.data_matrix
     ambient_dist_pointwise = np.linalg.norm(data - data[index], axis=1)
     ambient_dist = dg.function(ambient_dist_pointwise).coeffs
 
@@ -61,7 +61,7 @@ def geodesic_distances_function(dg, index, reg=False, num_subsample=None):
     # 1-Lipschitz constraints
     L_list = []
     for p in sampled_indices:
-        Gp = dg.backend.gamma_functions[p]  # (n0, n0)
+        Gp = dg.cache.gamma_functions[p]  # (n0, n0)
         eigvals, eigvecs = np.linalg.eigh(Gp)
         top_d = np.argsort(eigvals)[-dg.dim :]
         eigvals_top = np.maximum(eigvals[top_d], eps)
@@ -77,7 +77,7 @@ def geodesic_distances_function(dg, index, reg=False, num_subsample=None):
         constraints.append(cp.norm(lap_matrix @ intrinsic_coeffs, 2) <= 1.0)
 
     # d(x,x) == 0
-    constraints.append(dg.backend.u[index].T @ v == 0)
+    constraints.append(dg.cache.u[index].T @ v == 0)
 
     # Objective:
     objective = cp.Maximize(v[0])

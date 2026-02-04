@@ -18,13 +18,11 @@ class SymmetricKernelConstructor:
         self,
         nbr_indices: np.ndarray,
         kernel: np.ndarray,
-        bandwidths: Optional[np.ndarray] = None,
-        use_mean_centres: bool = True,
     ):
         self.nbr_indices = np.asarray(nbr_indices)
         self.kernel = np.asarray(kernel)
-        self.bandwidths = np.asarray(bandwidths) if bandwidths is not None else None
-        self.use_mean_centres = use_mean_centres
+        self.nbr_indices = np.asarray(nbr_indices)
+        self.kernel = np.asarray(kernel)
 
         # Lazy caches
         self._K_sym: Optional[np.ndarray] = None

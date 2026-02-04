@@ -386,7 +386,7 @@ def form_to_ambient_polyvector(form) -> np.ndarray:
     d = form.dg.dim
     n = form.dg.n
     data = form.to_pointwise_basis().reshape(form.dg.n, -1)  # (n, C)
-    gamma = np.asarray(form.dg.backend.gamma_ambient)  # (n, d_ambient, d)
+    gamma = np.asarray(form.dg.cache.gamma_ambient)  # (n, d_ambient, d)
 
     # k = 0: scalar field, nothing to raise
     if k == 0:

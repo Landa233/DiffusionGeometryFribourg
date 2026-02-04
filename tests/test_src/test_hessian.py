@@ -10,7 +10,7 @@ def test_hessian_02_sym_weak_matrix(setup_geom):
     n, n1, d, n0 = dg.n, dg.n_coefficients, dg.dim, dg.n_function_basis
     hessian_sym_02_weak_computed = dg.hessian.weak
     hessian_matrix, u_n1, measure = (
-        dg.backend.hessian_functions,
+        dg.cache.hessian_functions,
         dg.function_basis[:, :n1],
         dg.measure,
     )

@@ -14,17 +14,17 @@ def test_derivative_weak_k(setup_geom, k):
     if k >= d:
         pytest.skip(f"k={k} is not smaller than dimension d={d}")
     d_weak_computed = dg.d(k).weak
-    u, measure, gamma_coords = dg.function_basis, dg.measure, dg.backend.gamma_coords
+    u, measure, gamma_coords = dg.function_basis, dg.measure, dg.cache.gamma_coords
     if k == 0:
         d_weak_manual = np.einsum(
-            "pi,pjI,p->ijI", u[:, :n1], dg.backend.gamma_mixed, measure
+            "pi,pjI,p->ijI", u[:, :n1], dg.cache.gamma_mixed, measure
         ).reshape(n1 * d, n0)
         i_sel = sample_indices(n1)
         I_sel = flat_idx_n1d(i_sel, d)
         assert np.allclose(d_weak_computed[I_sel], d_weak_manual[I_sel], atol=1e-6)
     else:
-        _, compound_matrices = dg.backend.gamma_coords_compound(k)
-        gamma_mixed = dg.backend.gamma_mixed[:, :, :n1]
+        _, compound_matrices = dg.cache.gamma_coords_compound(k)
+        gamma_mixed = dg.cache.gamma_mixed[:, :, :n1]
         u_n_rows = u[:, :n1]
         Ck, Ck1 = int(comb(d, k)), int(comb(d, k + 1))
         Js, J_primes = list(combinations(range(d), k)), list(

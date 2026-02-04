@@ -9,7 +9,7 @@ from diffusion_geometry.classes.tensors import Function, VectorField
 
 def test_hessian_operator(setup_geom):
     dg = setup_geom
-    # backend = dg.backend
+    # cache = dg.cache
 
     hess_op = dg.hessian
     assert isinstance(hess_op, LinearOperator)
@@ -34,7 +34,7 @@ def test_hessian_operator(setup_geom):
 
 def test_levi_civita_operator(setup_geom):
     dg = setup_geom
-    # backend = dg.backend
+    # cache = dg.cache
 
     lc_02 = dg.levi_civita
     assert isinstance(lc_02, LinearOperator)
@@ -58,7 +58,7 @@ def test_levi_civita_operator(setup_geom):
 
 def test_lie_bracket_operator(setup_geom):
     dg = setup_geom
-    # backend = dg.backend
+    # cache = dg.cache
 
     bracket = dg.lie_bracket
     assert isinstance(bracket, BilinearOperator)

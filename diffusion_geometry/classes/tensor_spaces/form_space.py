@@ -48,7 +48,7 @@ class FormSpace(BaseTensorSpace):
         """
         Pointwise carré du champ components for k-forms, Γᵏ(x) = (Γ(x; dx_J1, dx_J2)) with J1, J2 in C(d, k).
         """
-        return self.dg.backend.gamma_coords_compound(self.degree)[1]
+        return self.dg.cache.gamma_coords_compound(self.degree)[1]
 
     def wrap(self, coeffs: "np.ndarray") -> "Form":
         from ..tensors import Form

@@ -19,14 +19,14 @@ def test_up_delta_weak_k(setup_geom, k):
 
     if k == 0:
         up_delta_weak_manual = np.einsum(
-            "p,pij->ij", dg.measure, dg.backend.gamma_functions
+            "p,pij->ij", dg.measure, dg.cache.gamma_functions
         )
         assert np.allclose(up_delta_weak_computed, up_delta_weak_manual)
     else:
         gamma_n1, gamma_mixed_n1, gamma_coords, mu = (
-            dg.backend.gamma_functions[:, :n1, :n1],
-            dg.backend.gamma_mixed[:, :, :n1],
-            dg.backend.gamma_coords,
+            dg.cache.gamma_functions[:, :n1, :n1],
+            dg.cache.gamma_mixed[:, :, :n1],
+            dg.cache.gamma_coords,
             dg.measure,
         )
         Ck = int(comb(d, k))

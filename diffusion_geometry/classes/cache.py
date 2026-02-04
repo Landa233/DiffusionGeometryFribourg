@@ -7,9 +7,9 @@ from .base import GeometryEngine
 from .markov_triples import ImmersedMarkovTriple
 
 
-class DiffusionGeometryBackend(GeometryEngine):
+class DiffusionGeometryCache(GeometryEngine):
     """
-    Backend engine for computing Diffusion Geometry tensors.
+    Cache engine for computing and caching Diffusion Geometry tensors.
     """
 
     def __init__(self, data: ImmersedMarkovTriple, xp=None):

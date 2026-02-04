@@ -11,7 +11,7 @@ from diffusion_geometry.src.regularise import (
     regularise_diffusion,
     regularise_bandlimit,
 )
-from .backend import DiffusionGeometryBackend
+from .cache import DiffusionGeometryCache
 from .operators import BilinearOperator, LinearOperator, zero, identity
 from .tensors import Function, Form, Tensor02, Tensor02Sym, VectorField
 from .tensor_spaces import (
@@ -76,10 +76,8 @@ class DiffusionGeometry:
         )
         self.n_coefficients = min(self.n_coefficients, self.n_function_basis)
 
-        # ---------------------------------------------------------------------
-        # Backend engines compute and cache all the relevant objects
-        # ---------------------------------------------------------------------
-        self.backend = DiffusionGeometryBackend(self.triple)
+        # Cache for all the reused objects
+        self.cache = DiffusionGeometryCache(self.triple)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DiffusionGeometry):
@@ -193,8 +191,6 @@ class DiffusionGeometry:
         constructor = SymmetricKernelConstructor(
             nbr_indices=nbr_indices,
             kernel=kernel,
-            bandwidths=bandwidths,
-            use_mean_centres=use_mean_centres,
         )
         measure = constructor.resolve_measure(measure)
         function_basis = constructor.resolve_function_basis(
@@ -204,7 +200,7 @@ class DiffusionGeometry:
             regularise, data_matrix, immersion_coords
         )
 
-        # Create the EmbeddedMarkovTriple with all this data
+        # Create the ImmersedMarkovTriple with all this data
         triple = ImmersedMarkovTriple(
             function_basis=function_basis,
             measure=measure,
@@ -251,14 +247,15 @@ class DiffusionGeometry:
             - function_basis (np.ndarray, optional): Precomputed basis of coefficient functions.
             - use_mean_centres (bool, default=True): Whether to use mean centering.
         """
-        c = kwargs.get("c", 0.0)
-        bandwidth_variability = kwargs.get("bandwidth_variability", -0.5)
-        knn_bandwidth = kwargs.get("knn_bandwidth", 8)
+        kernel, bandwidths = diffusion_process.markov_chain(
+            nbr_distances=nbr_distances,
+            nbr_indices=nbr_indices,
+            c=kwargs.get("c", 0.0),
+            bandwidth_variability=kwargs.get("bandwidth_variability", -0.5),
+            knn_bandwidth=kwargs.get("knn_bandwidth", 8),
+        )
         immersion_coords = kwargs.pop("immersion_coords", None)
 
-        kernel, bandwidths = diffusion_process.markov_chain(
-            nbr_distances, nbr_indices, c, bandwidth_variability, knn_bandwidth
-        )
         return cls.from_knn_kernel(
             nbr_indices=nbr_indices,
             kernel=kernel,
@@ -295,9 +292,8 @@ class DiffusionGeometry:
             - function_basis (np.ndarray, optional): Precomputed basis of coefficient functions.
             - use_mean_centres (bool, default=True): Whether to use mean centering.
         """
-        knn_kernel = kwargs.get("knn_kernel", 32)
         nbr_distances, nbr_indices = diffusion_process.knn_graph(
-            data_matrix, knn_kernel=knn_kernel
+            data_matrix=data_matrix, knn_kernel=kwargs.get("knn_kernel", 32)
         )
         kwargs["data_matrix"] = data_matrix
 
@@ -560,7 +556,7 @@ class DiffusionGeometry:
         """
         weak_matrix = derivative.derivative_weak(
             self.triple.function_basis,
-            self.backend.gamma_mixed,
+            self.cache.gamma_mixed,
             None,
             self.triple.measure,
             0,
@@ -588,10 +584,10 @@ class DiffusionGeometry:
                 codomain=self.form_space(k + 1),
                 weak_matrix=self.grad.weak,
             )
-        _, compound_matrices = self.backend.gamma_coords_compound(k)
+        _, compound_matrices = self.cache.gamma_coords_compound(k)
         weak_matrix = derivative.derivative_weak(
             self.triple.function_basis,
-            self.backend.gamma_mixed,
+            self.cache.gamma_mixed,
             compound_matrices,
             self.triple.measure,
             k,
@@ -641,9 +637,9 @@ class DiffusionGeometry:
             return zero(space)
         if k == 0:
             weak_matrix = laplacian.up_delta_weak(
-                self.backend.gamma_functions,
-                self.backend.gamma_mixed,
-                self.backend.gamma_coords,
+                self.cache.gamma_functions,
+                self.cache.gamma_mixed,
+                self.cache.gamma_coords,
                 None,
                 None,
                 self.triple.measure,
@@ -654,11 +650,11 @@ class DiffusionGeometry:
                 codomain=space,
                 weak_matrix=weak_matrix,
             )
-        gamma_submatrices, compound_matrices = self.backend.gamma_coords_compound(k)
+        gamma_submatrices, compound_matrices = self.cache.gamma_coords_compound(k)
         weak_matrix = laplacian.up_delta_weak(
-            self.backend.gamma_functions,
-            self.backend.gamma_mixed,
-            self.backend.gamma_coords,
+            self.cache.gamma_functions,
+            self.cache.gamma_mixed,
+            self.cache.gamma_coords,
             gamma_submatrices,
             compound_matrices,
             self.triple.measure,
@@ -712,9 +708,9 @@ class DiffusionGeometry:
         hess = hessian.hessian_functions(
             self.triple.function_basis,
             self.triple.immersion_coords,
-            self.backend.gamma_coords_regularised,
+            self.cache.gamma_coords_regularised,
             # this is the only use of gamma_mixed_regularised so we do not cache it
-            self.triple.regularise(self.backend.gamma_mixed),
+            self.triple.regularise(self.cache.gamma_mixed),
             cdc=self.triple.cdc,
         )
         weak_matrix = hessian.hessian_02_sym_weak(
@@ -740,7 +736,7 @@ class DiffusionGeometry:
         weak_tensor = lie_bracket.lie_bracket_weak(
             self.triple.function_basis,
             self.triple.immersion_coords,
-            self.backend.gamma_coords,
+            self.cache.gamma_coords,
             self.triple.measure,
             self.n_coefficients,
             cdc=self.triple.cdc,
@@ -765,9 +761,9 @@ class DiffusionGeometry:
         """
         weak_matrix = levi_civita.levi_civita_02_weak(
             self.triple.function_basis,
-            self.backend.gamma_mixed,
-            self.backend.gamma_coords,
-            self.backend.hessian_coords,
+            self.cache.gamma_mixed,
+            self.cache.gamma_coords,
+            self.cache.hessian_coords,
             self.triple.measure,
             self.n_coefficients,
         )

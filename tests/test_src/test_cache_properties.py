@@ -7,7 +7,7 @@ def test_gram_matrices_positive_definite(setup_geom):
     """Test that Gram matrices are positive definite."""
     dg = setup_geom
     dg = setup_geom
-    # backend = dg.backend
+    # cache = dg.cache
 
     # Test G matrix for k=0
     G0 = dg.function_space.gram

@@ -138,7 +138,7 @@ class MockDiffusionGeometryV2(DiffusionGeometry):
 
         # Override engines with Mocks
 
-        self.backend.gamma_coords = np.tile(np.eye(d), (n, 1, 1))
+        self.cache.gamma_coords = np.tile(np.eye(d), (n, 1, 1))
         # gamma_mixed? DiffusionGeometry exposes it?
         # main.py properties: gamma_coords, but not gamma_mixed directly (it was delegated).
         # But wait, VectorFieldSpace used gamma_mixed?
