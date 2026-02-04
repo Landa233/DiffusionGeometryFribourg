@@ -262,6 +262,7 @@ class DiffusionGeometry:
         return cls.from_knn_kernel(
             nbr_indices=nbr_indices,
             kernel=kernel,
+            bandwidths=bandwidths,
             immersion_coords=immersion_coords,
             **kwargs,
         )
