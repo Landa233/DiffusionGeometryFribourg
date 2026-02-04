@@ -8,7 +8,7 @@ __pycache__
 .agent
 
 # Data
-data/
+# data/
 temp.png
 demo_notebooks/temp.png
 
