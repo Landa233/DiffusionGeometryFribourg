@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from functools import cached_property, lru_cache, partial
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
 from opt_einsum import contract
@@ -9,7 +11,7 @@ from core.diffusion.diffusion_process import knn_graph, markov_chain
 from core.diffusion.markov_triples import ImmersedMarkovTriple
 from core.diffusion.regularise import regularise_bandlimit, regularise_diffusion
 from core.diffusion.symmetric_kernel import SymmetricKernelConstructor
-from core.geometry.cache import DiffusionGeometryCache
+
 from operators.differential_operators import derivative
 from operators.differential_operators.hessian import hessian_02_sym_weak, hessian_functions
 from operators.differential_operators.laplacian import up_delta_weak
@@ -17,18 +19,21 @@ from operators.differential_operators.levi_civita import levi_civita_02_weak
 from operators.differential_operators.lie_bracket import lie_bracket_weak
 from operators.types.bilinear import BilinearOperator
 from operators.types.linear import LinearOperator, zero
-from tensors.base_tensor.base_tensor import Tensor
-from tensors.forms.form import Form
-from tensors.forms.form_space import FormSpace
-from tensors.functions.function import Function
-from tensors.functions.function_space import FunctionSpace
-from tensors.tensor02.tensor02 import Tensor02
-from tensors.tensor02.tensor02_space import Tensor02Space
-from tensors.tensor02sym.tensor02sym import Tensor02Sym
-from tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
-from tensors.vector_fields.vector_field import VectorField
-from tensors.vector_fields.vector_field_space import VectorFieldSpace
+
+
 from utils.batch_utils import compatible_batches
+
+if TYPE_CHECKING:
+    from tensors.base_tensor.base_tensor import Tensor
+    from tensors.forms.form_space import FormSpace
+    from tensors.functions.function import Function
+    from tensors.tensor02.tensor02 import Tensor02
+    from tensors.tensor02sym.tensor02sym import Tensor02Sym
+    from tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
+    from tensors.vector_fields.vector_field import VectorField
+    from tensors.vector_fields.vector_field_space import VectorFieldSpace
+    from tensors.tensor02.tensor02_space import Tensor02Space
+    from tensors.functions.function_space import FunctionSpace
 
 
 class DiffusionGeometry:
@@ -76,6 +81,7 @@ class DiffusionGeometry:
         self.n_coefficients = min(self.n_coefficients, self.n_function_basis)
 
         # Cache for all the reused objects
+        from core.geometry.cache import DiffusionGeometryCache
         self.cache = DiffusionGeometryCache(self.triple)
 
     def __eq__(self, other: object) -> bool:
@@ -428,11 +434,13 @@ class DiffusionGeometry:
     @cached_property
     def function_space(self) -> FunctionSpace:
         """Space of functions."""
+        from tensors.functions.function_space import FunctionSpace
         return FunctionSpace(self)
 
     @cached_property
     def vector_field_space(self) -> VectorFieldSpace:
         """Space of vector fields."""
+        from tensors.vector_fields.vector_field_space import VectorFieldSpace
         return VectorFieldSpace(self)
 
     @lru_cache(maxsize=None)
@@ -440,11 +448,14 @@ class DiffusionGeometry:
         """Space of forms."""
         if degree == 0:
             return self.function_space
+
+        from tensors.forms.form_space import FormSpace
         return FormSpace(self, degree)
 
     @cached_property
     def tensor02_space(self) -> Tensor02Space:
         """Space of general (0,2)-tensors."""
+        from tensors.tensor02.tensor02_space import Tensor02Space
         return Tensor02Space(self)
 
     @cached_property
@@ -851,6 +862,7 @@ class DiffusionGeometry:
         f : Function
             Function object expanded in the basis {φ_i}.
         """
+        from tensors.functions.function import Function
         return Function.from_pointwise_basis(f_data, self)
 
     def vector_field(self, X_data, mode="pullback"):
@@ -877,6 +889,7 @@ class DiffusionGeometry:
                 "Vector field data must have trailing shape "
                 f"({self.n}, {self.dim}), got {X_data.shape}"
             )
+        from src.tensors.vector_fields.vector_field import VectorField
 
         if mode == "pullback":
             return VectorField.from_pointwise_basis(X_data, self)
@@ -908,6 +921,8 @@ class DiffusionGeometry:
             return self.function(form_data)
 
         form_data = np.asarray(form_data)
+        from tensors.forms.form import Form
+
         return Form.from_pointwise_basis(form_data, self, degree)
 
     def tensor02(self, tensor_data):

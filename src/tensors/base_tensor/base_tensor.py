@@ -6,12 +6,15 @@ for coefficient array handling that are shared across all tensor types.
 """
 
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import numpy as np
 
 from core.geometry.diffusion_geometry import DiffusionGeometry
-from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 from utils.basis_conversions import _from_pointwise_basis, _to_pointwise_basis
 from utils.batch_utils import compatible_batches
+
+if TYPE_CHECKING:
+    from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
 
 class Tensor:

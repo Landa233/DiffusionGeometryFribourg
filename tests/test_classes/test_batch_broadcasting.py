@@ -2,10 +2,11 @@ import pytest
 import numpy as np
 from functools import cached_property
 
-from core import Immers
-from core.diffusion.markov_triples import ImmersedMarkovTriple
-from core.geometry.diffusion_geometry import DiffusionGeometry
-from utils.batch_utils import compatible_batches
+from src.core.diffusion.markov_triples import ImmersedMarkovTriple
+from src.core.geometry.diffusion_geometry import DiffusionGeometry
+from src.utils.batch_utils import compatible_batches
+
+
 # from diffusion_geometry.classes.main import DiffusionGeometry
 # from diffusion_geometry.classes.tensors.base import compatible_batches
 # from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple

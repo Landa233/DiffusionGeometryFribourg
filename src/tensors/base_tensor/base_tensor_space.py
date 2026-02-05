@@ -13,10 +13,11 @@ import numpy as np
 
 from opt_einsum import contract
 from tensors.base_tensor.metric_gram import gram
-from tensors.direct_sum.direct_sum_space import DirectSumSpace
+
 
 if TYPE_CHECKING:
     from core.geometry.diffusion_geometry import DiffusionGeometry
+    from tensors.direct_sum.direct_sum_space import DirectSumSpace
 
 
 class BaseTensorSpace:
@@ -99,6 +100,7 @@ class BaseTensorSpace:
     # -------------------------------------------------------------------------
 
     def __add__(self, other: object) -> "DirectSumSpace":
+        from tensors.direct_sum.direct_sum_space import DirectSumSpace
 
         if not isinstance(other, BaseTensorSpace):
             return NotImplemented
