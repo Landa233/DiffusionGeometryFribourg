@@ -5,8 +5,8 @@ Tests for the enhanced Form class with differential operators and function multi
 import numpy as np
 import pytest
 from scipy.special import comb
-from diffusion_geometry.classes.main import DiffusionGeometry
-from diffusion_geometry.classes.tensors import Function, Form
+from diffusion_geometry.core import DiffusionGeometry
+from diffusion_geometry.tensors import Function, Form
 
 
 def test_enhanced_form_creation(setup_geom):

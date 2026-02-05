@@ -136,7 +136,6 @@ def wedge_operator(a: "Form", l: "int"):
     out : ndarray
         Coefficients of the wedge product as a linear operator.
     """
-    from diffusion_geometry.classes.tensors import Form
 
     d = a.dg.dim
     k = a.degree

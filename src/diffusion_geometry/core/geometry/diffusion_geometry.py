@@ -461,6 +461,7 @@ class DiffusionGeometry:
     @cached_property
     def tensor02sym_space(self) -> Tensor02SymSpace:
         """Space of symmetric (0,2)-tensors."""
+        from diffusion_geometry.tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
         return Tensor02SymSpace(self)
 
     # -------------------------------------------------------------------------
@@ -929,10 +930,12 @@ class DiffusionGeometry:
         """Create a Tensor02 object from data basis values."""
 
         tensor_data = np.asarray(tensor_data)
+        from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
         return Tensor02.from_pointwise_basis(tensor_data, self)
 
     def tensor02sym(self, tensor_data):
         """Create a symmetric (0,2)-tensor object from data basis values."""
 
         tensor_data = np.asarray(tensor_data)
+        from diffusion_geometry.tensors.tensor02sym.tensor02sym import Tensor02Sym
         return Tensor02Sym.from_pointwise_basis(tensor_data, self)

@@ -1,7 +1,7 @@
 import numpy as np
 from tests.helpers import sample_indices, flat_idx_n1d, flat_idx_n1d2, flat_idx_n1d_sym
 
-from diffusion_geometry.src.basis_utils import get_symmetric_basis_indices
+from diffusion_geometry.utils.basis_utils import get_symmetric_basis_indices
 
 
 def test_hessian_02_sym_weak_matrix(setup_geom):

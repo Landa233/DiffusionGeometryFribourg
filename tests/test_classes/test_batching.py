@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-# from diffusion_geometry.classes.main import DiffusionGeometry
+# from diffusion_geometry.core import DiffusionGeometry
 
 
 def test_metric_batching(setup_geom):

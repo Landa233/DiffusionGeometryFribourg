@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from diffusion_geometry.classes.operators import LinearOperator, identity, zero
+from diffusion_geometry.operators import LinearOperator, identity, zero
 
 
 def test_spectral_decomposition_properties(setup_geom):

@@ -8,7 +8,7 @@ from tests.helpers import (
     flat_idx_n1d2,
     flat_idx_n1d_sym,
 )
-from diffusion_geometry.src.basis_utils import get_symmetric_basis_indices
+from diffusion_geometry.utils.basis_utils import get_symmetric_basis_indices
 
 
 @pytest.mark.parametrize("k", list(range(0, 7)))

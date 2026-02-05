@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from diffusion_geometry.classes.operators import (
+from diffusion_geometry.operators import (
     block,
     hstack,
     vstack,
@@ -8,7 +8,7 @@ from diffusion_geometry.classes.operators import (
     identity,
     zero,
 )
-from diffusion_geometry.classes.tensor_spaces import BaseTensorSpace
+from diffusion_geometry.tensors import BaseTensorSpace
 
 
 def test_block_operator_construction(setup_geom):

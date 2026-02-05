@@ -7,9 +7,9 @@ from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometr
 from diffusion_geometry.utils.batch_utils import compatible_batches
 
 
-# from diffusion_geometry.classes.main import DiffusionGeometry
-# from diffusion_geometry.classes.tensors.base import compatible_batches
-# from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple
+# from diffusion_geometry.core import DiffusionGeometry
+# from diffusion_geometry.tensors.base import compatible_batches
+# from diffusion_geometry.tensors.markov_triples import ImmersedMarkovTriple
 
 
 class MockDiffusionGeometry(DiffusionGeometry):
