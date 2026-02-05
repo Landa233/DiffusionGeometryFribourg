@@ -7,9 +7,6 @@ from core.diffusion.carre_du_champ import gamma_compound
 from core.diffusion.markov_triples import ImmersedMarkovTriple
 from diffusion_geometry.classes.base import GeometryEngine
 from operators.differential_operators.hessian import hessian_coords, hessian_functions
-# from diffusion_geometry.src import carre_du_champ, hessian
-# from .base import GeometryEngine
-# from .markov_triples import ImmersedMarkovTriple
 
 
 class DiffusionGeometryCache(GeometryEngine):

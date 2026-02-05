@@ -44,7 +44,8 @@ def levi_civita_02_weak(
     # Shape: (n, n1), (n, d, n1), (n, d, d), (n) -> (n1, d, d, n1, d)
     # p: point index, i: output coeff, j: output coord1, k: output coord2, I: input coeff, J: input vector coord
     term1 = contract(
-        "pi,pjI,pkJ,p->ijkIJ", u[:, :n1], gamma_mixed[:, :, :n1], gamma_coords, measure
+        "pi,pjI,pkJ,p->ijkIJ", u[:, :n1], gamma_mixed[:,
+                                                      :, :n1], gamma_coords, measure
     )
     # term2: ∫ φ_i φ_I H(x_J)(∇x_k, ∇x_l) dμ
     # Shape: (n, n1), (n, n1), (n, d, d, d), (n) -> (n1, d, d, n1, d)
@@ -87,7 +88,8 @@ def levi_civita_11_weak(
         mu,
     )  # (n1, d, n1, d, n1, d)
     lie_term2 = contract(
-        "pi,pI,ps,pjtJ,p->ijIJst", u[:, :n1], u[:, :n1], u[:, :n1], hessian_coords, mu
+        "pi,pI,ps,pjtJ,p->ijIJst", u[:, :n1], u[:,
+                                                :n1], u[:, :n1], hessian_coords, mu
     )  # (n1, d, n1, d, n1, d)
 
     LC_11 = lie_term1 + lie_term2

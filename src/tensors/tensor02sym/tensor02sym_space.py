@@ -11,7 +11,6 @@ from core.diffusion.carre_du_champ import gamma_02_sym
 from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
 
-
 if TYPE_CHECKING:
     import numpy as np
 

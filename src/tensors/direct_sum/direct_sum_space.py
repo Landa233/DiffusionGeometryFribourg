@@ -14,9 +14,6 @@ import numpy as np
 from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
 
-
-
-
 if TYPE_CHECKING:
     from core.geometry.diffusion_geometry import DiffusionGeometry
     from tensors.direct_sum.direct_sum_element import DirectSumElement
@@ -92,7 +89,7 @@ class DirectSumSpace(BaseTensorSpace):
         offset = 0
         for matrix, space in zip(matrices, self._spaces):
             size = space.coeff_dimension
-            result[:, offset : offset + size, offset : offset + size] = matrix
+            result[:, offset: offset + size, offset: offset + size] = matrix
             offset += size
         return result
 
@@ -107,7 +104,7 @@ class DirectSumSpace(BaseTensorSpace):
         offset = 0
         for matrix, space in zip(matrices, self._spaces):
             size = space.coeff_dimension
-            result[offset : offset + size, offset : offset + size] = matrix
+            result[offset: offset + size, offset: offset + size] = matrix
             offset += size
         return result
 
@@ -163,7 +160,7 @@ class DirectSumSpace(BaseTensorSpace):
             rows = space.coeff_dimension
             if width:
                 result[
-                    row_offset : row_offset + rows, col_offset : col_offset + width
+                    row_offset: row_offset + rows, col_offset: col_offset + width
                 ] = basis
                 col_offset += width
             row_offset += rows

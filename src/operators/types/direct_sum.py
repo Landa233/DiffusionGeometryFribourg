@@ -5,9 +5,6 @@ import numpy as np
 from operators.types.linear import LinearOperator
 
 
-
-
-
 if TYPE_CHECKING:
     from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
@@ -73,7 +70,8 @@ def block(block_rows: Sequence[Sequence[LinearOperator]]) -> LinearOperator:
 
     # 3. Construct combined spaces
     full_domain = domains[0] if len(domains) == 1 else _sum_spaces(domains)
-    full_codomain = codomains[0] if len(codomains) == 1 else _sum_spaces(codomains)
+    full_codomain = codomains[0] if len(
+        codomains) == 1 else _sum_spaces(codomains)
 
     # 4. Assemble weak matrix
     # Concatenate weak matrices to form the global weak matrix.

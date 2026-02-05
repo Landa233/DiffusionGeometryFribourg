@@ -6,24 +6,12 @@ for coefficient array handling that are shared across all tensor types.
 """
 
 from __future__ import annotations
-
-from functools import cached_property
-from typing import TYPE_CHECKING
-
 import numpy as np
 
 from core.geometry.diffusion_geometry import DiffusionGeometry
 from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 from utils.basis_conversions import _from_pointwise_basis, _to_pointwise_basis
 from utils.batch_utils import compatible_batches
-
-# from .batch_utils import (
-#     compatible_batches,
-#     _infer_batch_shape,
-#     _flatten_batch_dims,
-#     _restore_batch_dims,
-# )
-# from .basis_conversions import _from_pointwise_basis, _to_pointwise_basis
 
 
 class Tensor:
@@ -226,7 +214,8 @@ class Tensor:
 
         from tensors.functions.function import Function
         if isinstance(other, Function):
-            self._check_arithmetic_compatibility(other, require_same_space=False)
+            self._check_arithmetic_compatibility(
+                other, require_same_space=False)
 
             # Pointwise product
             # self: (..., n * C) -> (..., n, C)
@@ -296,7 +285,8 @@ class Tensor:
         from tensors.functions.function import Function
 
         if isinstance(other, Function):
-            self._check_arithmetic_compatibility(other, require_same_space=False)
+            self._check_arithmetic_compatibility(
+                other, require_same_space=False)
 
             # Pointwise division
             # self: (..., n * C) -> (..., n, C)

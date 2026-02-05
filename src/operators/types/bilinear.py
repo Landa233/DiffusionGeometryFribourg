@@ -7,9 +7,6 @@ from opt_einsum import contract
 from utils.batch_utils import compatible_batches
 
 
-# from ..tensors import _flatten_batch_dims, _restore_batch_dims, compatible_batches
-# from .linear import LinearOperator
-
 if TYPE_CHECKING:
     from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
@@ -37,7 +34,8 @@ class BilinearOperator:
         self._strong = strong_tensor
 
         if weak_tensor is None and strong_tensor is None:
-            raise ValueError("Provide at least one of weak_tensor or strong_tensor")
+            raise ValueError(
+                "Provide at least one of weak_tensor or strong_tensor")
 
         # Expected component shape: (codim, dim_a, dim_b)
         self._component_shape = (
@@ -161,7 +159,8 @@ class BilinearOperator:
 
         # Handles batches via broadcasting if implemented carefully, but opt_einsum handles it well.
         # Shape: (..., codim, dim_a, dim_b), (..., dim_a), (..., dim_b) -> (..., codim)
-        val = contract("...iAB,...A,...B->...i", self.strong, x.coeffs, y.coeffs)
+        val = contract("...iAB,...A,...B->...i",
+                       self.strong, x.coeffs, y.coeffs)
 
         return self.codomain.wrap(val)
 

@@ -12,13 +12,9 @@ from typing import TYPE_CHECKING
 from tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
 
-
-
 if TYPE_CHECKING:
     from tensors.vector_fields.vector_field import VectorField
     import numpy as np
-
-  
 
 
 class VectorFieldSpace(BaseTensorSpace):

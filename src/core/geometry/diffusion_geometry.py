@@ -30,33 +30,6 @@ from tensors.vector_fields.vector_field import VectorField
 from tensors.vector_fields.vector_field_space import VectorFieldSpace
 from utils.batch_utils import compatible_batches
 
-# from diffusion_geometry.src import diffusion_process
-# from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple, MarkovTriple
-# from diffusion_geometry.classes.symmetric_kernel import SymmetricKernelConstructor
-# from diffusion_geometry.src.regularise import (
-#     regularise_diffusion,
-#     regularise_bandlimit,
-# )
-# from .cache import DiffusionGeometryCache
-# from .operators import BilinearOperator, LinearOperator, zero, identity
-# from .tensors import Function, Form, Tensor02, Tensor02Sym, VectorField
-# from .tensor_spaces import (
-#     FormSpace,
-#     FunctionSpace,
-#     Tensor02Space,
-#     Tensor02SymSpace,
-#     VectorFieldSpace,
-# )
-# from diffusion_geometry.src import (
-#     carre_du_champ,
-#     hessian,
-#     levi_civita,
-#     derivative,
-#     lie_bracket,
-#     laplacian,
-# )
-# from .tensors.base import Tensor, compatible_batches
-
 
 class DiffusionGeometry:
     """
@@ -179,7 +152,8 @@ class DiffusionGeometry:
         bandwidths = kwargs.get("bandwidths")
         n_function_basis = kwargs.get("n_function_basis", 50)
         n_coefficients = kwargs.pop("n_coefficients", None)
-        regularisation_method = kwargs.get("regularisation_method", "diffusion")
+        regularisation_method = kwargs.get(
+            "regularisation_method", "diffusion")
         rcond = kwargs.pop("rcond", 1e-5)
         measure = kwargs.get("measure")
         function_basis = kwargs.get("function_basis")
@@ -202,7 +176,8 @@ class DiffusionGeometry:
         elif regularisation_method == "none":
             regularise = None
         else:
-            raise ValueError(f"Unknown regularisation method: {regularisation_method}")
+            raise ValueError(
+                f"Unknown regularisation method: {regularisation_method}")
 
         # Define carré du champ
         cdc = partial(
@@ -544,7 +519,8 @@ class DiffusionGeometry:
         assert compatible_batches(
             a.batch_shape, b.batch_shape
         ), f"Batch shapes {a.batch_shape} vs {b.batch_shape} are not compatible"
-        result = contract("AB,...A,...B->...", a.space.gram, a.coeffs, b.coeffs)
+        result = contract("AB,...A,...B->...",
+                          a.space.gram, a.coeffs, b.coeffs)
         if result.ndim == 0:
             return float(result)
         return result
@@ -676,7 +652,8 @@ class DiffusionGeometry:
                 codomain=space,
                 weak_matrix=weak_matrix,
             )
-        gamma_submatrices, compound_matrices = self.cache.gamma_coords_compound(k)
+        gamma_submatrices, compound_matrices = self.cache.gamma_coords_compound(
+            k)
         weak_matrix = up_delta_weak(
             self.cache.gamma_functions,
             self.cache.gamma_mixed,
@@ -850,7 +827,8 @@ class DiffusionGeometry:
                 )
         R_XYXY = self.riemann_curvature(X, Y, X, Y)
         denominator = self.g(X, X) * self.g(Y, Y) - self.g(X, Y) ** 2
-        denominator = np.where(denominator == 0, np.finfo(float).eps, denominator)
+        denominator = np.where(
+            denominator == 0, np.finfo(float).eps, denominator)
         return R_XYXY / denominator
 
     # -------------------------------------------------------------------------
@@ -905,7 +883,8 @@ class DiffusionGeometry:
         elif mode == "reconstruct":
             return VectorField.from_reconstruction(X_data, self)
         else:
-            raise ValueError('Mode must be either "pullback" or "reconstruct".')
+            raise ValueError(
+                'Mode must be either "pullback" or "reconstruct".')
 
     def form(self, form_data, degree):
         """

@@ -1,5 +1,4 @@
 from opt_einsum import contract
-# from .basis_utils import kp1_children_and_signs
 import numpy as np
 
 from utils.basis_utils import kp1_children_and_signs

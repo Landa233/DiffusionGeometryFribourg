@@ -5,15 +5,9 @@ The space of differential k-forms.
 """
 
 from __future__ import annotations
-
-from functools import cached_property
-from math import comb
 from typing import TYPE_CHECKING
 
 from tensors.base_tensor.base_tensor_space import BaseTensorSpace
-
-
-
 
 
 if TYPE_CHECKING:

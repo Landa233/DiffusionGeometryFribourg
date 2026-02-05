@@ -12,14 +12,14 @@ import numpy as np
 from opt_einsum import contract
 from scipy.special import comb
 
-from diffusion_geometry.src import basis_utils
+# from diffusion_geometry.src import basis_utils
 from tensors.base_tensor.base_tensor import Tensor
 from tensors.tensor02.tensor02 import Tensor02
+from utils import basis_utils
 from utils.basis_conversions import _from_pointwise_basis
 from utils.batch_utils import _infer_batch_shape, compatible_batches
 
 # from .base import Tensor, compatible_batches, _infer_batch_shape, _from_pointwise_basis
-
 
 
 if TYPE_CHECKING:
@@ -216,7 +216,8 @@ class Form(Tensor):
         from tensors.forms.form_space import FormSpace
 
         if not isinstance(space, FormSpace):
-            raise TypeError(f"Form requires a FormSpace; got {type(space).__name__}.")
+            raise TypeError(
+                f"Form requires a FormSpace; got {type(space).__name__}.")
         assert (
             space.degree == degree
         ), f"FormSpace degree mismatch: expected {space.degree}, got {degree}."
@@ -328,7 +329,8 @@ class Form(Tensor):
         """
         # Represents the tensor product of 1-forms if other is a Form.
         if isinstance(other, Form):
-            self._check_arithmetic_compatibility(other, require_same_space=False)
+            self._check_arithmetic_compatibility(
+                other, require_same_space=False)
             return _tensor_product_1_forms(self, other)
 
         # Inherits scalar and function multiplication from base class.
@@ -349,7 +351,8 @@ class Form(Tensor):
             The wedge product α ∧ β.
         """
         if isinstance(other, Form):
-            self._check_arithmetic_compatibility(other, require_same_space=False)
+            self._check_arithmetic_compatibility(
+                other, require_same_space=False)
             return _wedge_product(self, other)
 
         return super().__xor__(other)
@@ -432,7 +435,8 @@ class Form(Tensor):
         k = self.degree
         dg = self.dg
 
-        exact_potential = dg.up_laplacian(k - 1).inverse()(self.codifferential())
+        exact_potential = dg.up_laplacian(
+            k - 1).inverse()(self.codifferential())
         exact_part = exact_potential.d()
 
         if k < dg.dim:

@@ -83,7 +83,8 @@ class SymmetricKernelConstructor:
 
         if data_matrix is None:
             # We have neither immersion_coords nor data_matrix
-            raise ValueError("data_matrix and/or immersion_coords must be provided.")
+            raise ValueError(
+                "data_matrix and/or immersion_coords must be provided.")
 
         # Compute immersion coords by regularising data_matrix
         return regularise(np.asarray(data_matrix))

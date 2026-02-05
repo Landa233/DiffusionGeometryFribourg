@@ -14,8 +14,6 @@ from tensors.base_tensor.base_tensor import Tensor
 from utils.batch_utils import _infer_batch_shape
 
 
-
-
 if TYPE_CHECKING:
     from tensors.direct_sum.direct_sum_space import DirectSumSpace
 

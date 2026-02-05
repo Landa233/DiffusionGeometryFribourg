@@ -25,7 +25,8 @@ def knn_graph(data_matrix: np.ndarray, knn_kernel: int = 32):
         Indices of neighbors.
         Shape: [n, k]
     """
-    nbrs = NearestNeighbors(n_neighbors=knn_kernel, algorithm="auto").fit(data_matrix)
+    nbrs = NearestNeighbors(n_neighbors=knn_kernel,
+                            algorithm="auto").fit(data_matrix)
     nbr_distances, nbr_indices = nbrs.kneighbors(data_matrix)
 
     return nbr_distances, nbr_indices
@@ -62,7 +63,8 @@ def compute_local_bandwidths(
         local_bandwidths = nbr_distances[:, 1:k_bandwidth].mean(axis=1)
     elif bandwidth_type == "l2":
         # Root mean square distance to the first k_bandwidth neighbors
-        local_bandwidths = np.sqrt((nbr_distances[:, 1:k_bandwidth] ** 2).mean(axis=1))
+        local_bandwidths = np.sqrt(
+            (nbr_distances[:, 1:k_bandwidth] ** 2).mean(axis=1))
     else:
         raise ValueError(f"Unknown bandwidth_type: {bandwidth_type}")
 
@@ -90,7 +92,8 @@ def tune_kernel(kernel_entries: np.ndarray, epsilons: np.ndarray):
         Estimated intrinsic dimension.
     """
 
-    test_kernel = np.exp(-kernel_entries[:, :, None] / (epsilons[None, None, :]))
+    test_kernel = np.exp(-kernel_entries[:,
+                         :, None] / (epsilons[None, None, :]))
     test_kernel_avg = test_kernel.mean(axis=(0, 1))
 
     criterion = np.diff(np.log(test_kernel_avg)) / np.diff(np.log(epsilons))
@@ -138,10 +141,11 @@ def markov_chain(
     n, knn_kernel = nbr_distances.shape
     assert nbr_indices.shape == (n, knn_kernel)
 
-    ## 1. Compute the kernel bandwidths rho via kernel density estimation.
+    # 1. Compute the kernel bandwidths rho via kernel density estimation.
 
     # Define and tune bandwidths for the density estimation kernel.
-    bandwidths_A = compute_local_bandwidths(nbr_distances, knn_bandwidth, "l2")  # [n]
+    bandwidths_A = compute_local_bandwidths(
+        nbr_distances, knn_bandwidth, "l2")  # [n]
     kernel_entries_A = nbr_distances**2 / (
         bandwidths_A[nbr_indices] * bandwidths_A[:, None]
     )
@@ -152,7 +156,8 @@ def markov_chain(
     kernel_A = np.exp(-kernel_entries_A / epsilon_A) / (
         (np.pi * epsilon_A) ** (dim_A / 2)
     )  # [n, knn_kernel]
-    density_estimate_A = kernel_A.sum(axis=1) / (n * bandwidths_A**dim_A)  # [n]
+    density_estimate_A = kernel_A.sum(
+        axis=1) / (n * bandwidths_A**dim_A)  # [n]
 
     # Define and tune the bandwidths bw with density_estimate_A.
     bandwidths_B = density_estimate_A**bandwidth_variability  # [n]
@@ -162,7 +167,7 @@ def markov_chain(
     )  # [n, knn_kernel]
     epsilon_B, dim_B = tune_kernel(kernel_entries_B, epsilons)
 
-    ## 2. Compute the kernel K using the bandwidths bw.
+    # 2. Compute the kernel K using the bandwidths bw.
 
     # Compute K, and an improved kernel density estimate q1.
     kernel_B = np.exp(-kernel_entries_B / epsilon_B)  # [n, knn_kernel]
@@ -175,11 +180,11 @@ def markov_chain(
         density_estimate_alpha[:, None] * density_estimate_alpha[nbr_indices]
     )  # [n, k]
 
-    ## 3. Compute the Markov chain from K.
+    # 3. Compute the Markov chain from K.
     row_sums = kernel_alpha.sum(axis=1)  # [n]
     diffusion_kernel = kernel_alpha / row_sums[:, None]  # [n, k]
 
-    ## 4. Compute the bandwidths.
+    # 4. Compute the bandwidths.
     bandwidths = (epsilon_B * bandwidths_B**2) / 4  # [n]
 
     return diffusion_kernel, bandwidths

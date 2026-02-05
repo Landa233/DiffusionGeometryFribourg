@@ -14,7 +14,6 @@ import numpy as np
 from opt_einsum import contract
 from tensors.base_tensor.metric_gram import gram
 from tensors.direct_sum.direct_sum_space import DirectSumSpace
-# from ...src import metric_gram
 
 if TYPE_CHECKING:
     from core.geometry.diffusion_geometry import DiffusionGeometry

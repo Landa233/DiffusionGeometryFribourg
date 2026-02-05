@@ -101,7 +101,8 @@ class Tensor02(Tensor):
         # TODO: this is not correct - use ambient coords
         data = self.to_pointwise_basis().reshape(self.dg.n, self.dg.dim, self.dg.dim)
         data = self.to_pointwise_basis().reshape(self.dg.n, self.dg.dim, self.dg.dim)
-        gamma = self.dg.triple.cdc(self.dg.immersion_coords, self.dg.immersion_coords)
+        gamma = self.dg.triple.cdc(
+            self.dg.immersion_coords, self.dg.immersion_coords)
         gamma = self.dg._regularise(gamma)
 
         # Raise both covariant indices: T_{ij} -> γ^{αi} γ^{βj} T_{ij}
@@ -129,12 +130,11 @@ class Tensor02(Tensor):
         ndarray or LinearOperator
             Pointwise function values if Y is provided, otherwise the operator applied to X.
         """
-       
 
         # --- Operator form: single argument ---
         if Y is None:
             return self.operator(X)
-        
+
         from tensors.vector_fields.vector_field import VectorField
 
         # --- Bilinear form: two arguments ---
@@ -151,7 +151,8 @@ class Tensor02(Tensor):
         n, n1, d = dg.n, dg.n_coefficients, dg.dim
 
         # --- Reshape coefficients ---
-        A = self.coeffs.reshape(self.batch_shape + (n1, d, d))  # (..., i, j, j')
+        A = self.coeffs.reshape(
+            self.batch_shape + (n1, d, d))  # (..., i, j, j')
         Xc = X.coeffs.reshape(self.batch_shape + (n1, d))  # (..., i1, j1)
         Yc = Y.coeffs.reshape(self.batch_shape + (n1, d))  # (..., i2, j2)
 

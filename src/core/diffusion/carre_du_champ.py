@@ -65,8 +65,10 @@ def carre_du_champ_knn(
 
     if use_mean_centres:
         # Compute local means E_i[f] and E_j[h]
-        means_f = (diffusion_kernel[:, :, None] * nbrs_f).sum(axis=1)  # [n, f_flat]
-        means_h = (diffusion_kernel[:, :, None] * nbrs_h).sum(axis=1)  # [n, h_flat]
+        means_f = (diffusion_kernel[:, :, None] *
+                   nbrs_f).sum(axis=1)  # [n, f_flat]
+        means_h = (diffusion_kernel[:, :, None] *
+                   nbrs_h).sum(axis=1)  # [n, h_flat]
         # Differences (f_i - E_i[f]) and (h_j - E_j[h])
         diff_f = nbrs_f - means_f[:, None, :]  # [n, k, f_flat]
         diff_h = nbrs_h - means_h[:, None, :]  # [n, k, h_flat]
@@ -173,7 +175,8 @@ def carre_du_champ_graph(
     # Covariance Cov(f_i, h_j): [n, f_flat, h_flat]
     # We calculate the weighted outer product per edge: w_e * (diff_f * diff_h^T)
     # Shape: [num_edges, f_flat, 1] * [num_edges, 1, h_flat] * [num_edges, 1, 1]
-    terms = (diff_f[:, :, None] * diff_h[:, None, :]) * diffusion_kernel[:, None, None]
+    terms = (diff_f[:, :, None] * diff_h[:, None, :]) * \
+        diffusion_kernel[:, None, None]
 
     # Flatten the feature dimensions to aggregate efficiently: [num_edges, f_flat * h_flat]
     out_dim = f_flat.shape[1] * h_flat.shape[1]
@@ -324,7 +327,8 @@ def gamma_02_sym(gamma_coords):
     # Apply weighting factors for off-diagonal elements
     # Create masks for diagonal vs off-diagonal basis elements
     is_diag_row = j1 == j2
-    is_diag_col = sym_idx[:, 0] == sym_idx[:, 1]  # Same as is_diag_row, for clarity
+    # Same as is_diag_row, for clarity
+    is_diag_col = sym_idx[:, 0] == sym_idx[:, 1]
 
     # Weight matrix: 1 for diagonal-diagonal, 2 for diagonal-off-diagonal or off-diagonal-diagonal,
     # 4 for off-diagonal-off-diagonal

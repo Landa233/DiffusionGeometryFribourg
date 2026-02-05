@@ -1,5 +1,4 @@
 from opt_einsum import contract
-# from .basis_utils import get_wedge_basis_indices
 import numpy as np
 
 from utils.basis_utils import get_wedge_basis_indices
@@ -76,14 +75,16 @@ def up_delta_weak(
         # Shape: (n), (n, n1, n1), (n, d, d) -> (n1, d, n1, d)
         # p: point index, i, l: coefficient function indices, k, j: coordinate indices
         term1 = contract(
-            "p,pik,pjl->ijkl", measure, gamma_functions[:, :n1, :n1], gamma_coords
+            "p,pik,pjl->ijkl", measure, gamma_functions[:,
+                                                        :n1, :n1], gamma_coords
         )
 
         # term2: ∫ bc dμ = ∫ Γ(x_l, φ_i) Γ(x_j, φ_I) dμ
         # Shape: (n), (n, d, n1), (n, d, n1) -> (n1, d, n1, d)
         # p: point index, i, k: output/input coeff indices, l, j: coordinate indices
         term2 = contract(
-            "p,pli,pjk->ijkl", measure, gamma_mixed[:, :, :n1], gamma_mixed[:, :, :n1]
+            "p,pli,pjk->ijkl", measure, gamma_mixed[:,
+                                                    :, :n1], gamma_mixed[:, :, :n1]
         )
         integral = term1 - term2
         return integral.reshape(n1 * dim, n1 * dim)
@@ -99,14 +100,17 @@ def up_delta_weak(
     detD = compound_matrices  # (n, Ck, Ck)
 
     # Build b[p, i, J, r] and c[p, j, s, I] from Γ_mix
-    mixed_lookup = np.take(gamma_mixed[:, :, :n1], idx_k, axis=1)  # (n, Ck, k, n1)
-    b = np.transpose(mixed_lookup, (0, 3, 1, 2))  # (n, n1, Ck, k) -> [p, i, J, r]
+    mixed_lookup = np.take(
+        gamma_mixed[:, :, :n1], idx_k, axis=1)  # (n, Ck, k, n1)
+    # (n, n1, Ck, k) -> [p, i, J, r]
+    b = np.transpose(mixed_lookup, (0, 3, 1, 2))
     c = mixed_lookup  # (n, Ck, k, n1) -> [p, j, s, I]
 
     # Solve D_{j,J} * v = c_j for v.
     # Add J axis and broadcast -> [p, j, J, s, I]
     c_broadcast = np.broadcast_to(c[:, :, None, :, :], (n, Ck, Ck, k, n1))
-    V = np.linalg.solve(D, c_broadcast)  # (n, Ck, Ck, k, n1) -> [p, j, J, s, I]
+    # (n, Ck, Ck, k, n1) -> [p, j, J, s, I]
+    V = np.linalg.solve(D, c_broadcast)
 
     # Compute the two terms in the Schur determinant formula (n1, Ck, n1, Ck).
     detD_measure = detD * measure[:, None, None]  # (n, Ck, Ck)
@@ -114,7 +118,8 @@ def up_delta_weak(
     # term1: ∫ det(D) a dμ = ∫ Γ(φ_i, φ_I) det(Γ(x_J, x_{J'})) dμ
     # Shape: (n, n1, n1), (n, Ck, Ck) -> (n1, Ck, n1, Ck)
     # p: point index, i, I: coefficient function indices, j, J: compound block indices (Ck)
-    term1 = contract("piI,pjJ->ijIJ", gamma_functions[:, :n1, :n1], detD_measure)
+    term1 = contract(
+        "piI,pjJ->ijIJ", gamma_functions[:, :n1, :n1], detD_measure)
 
     # term2: ∫ det(D) b D⁻¹ c dμ = ∫ det(D) (Γ(x, φ) D⁻¹ Γ(x, φ)) dμ
     # Shape: (n, Ck, Ck), (n, n1, Ck, k), (n, Ck, Ck, k, n1) -> (n1, Ck, n1, Ck)

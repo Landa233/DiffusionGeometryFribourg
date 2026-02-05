@@ -18,10 +18,6 @@ from utils.basis_conversions import _from_pointwise_basis
 from utils.batch_utils import _infer_batch_shape
 
 
-
-
-
-
 if TYPE_CHECKING:
     from tensors.vector_fields.vector_field_space import VectorFieldSpace
     from core.geometry.diffusion_geometry import DiffusionGeometry

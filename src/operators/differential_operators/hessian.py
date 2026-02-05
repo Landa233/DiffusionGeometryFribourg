@@ -2,7 +2,6 @@ from opt_einsum import contract
 import numpy as np
 
 from utils.basis_utils import get_symmetric_basis_indices
-# from .basis_utils import get_symmetric_basis_indices
 
 
 def hessian_functions(u, coords, gamma_coords, gamma_mixed, cdc):

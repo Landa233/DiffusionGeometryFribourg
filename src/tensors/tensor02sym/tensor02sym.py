@@ -15,7 +15,6 @@ from utils.basis_utils import expand_symmetric_tensor_coeffs
 from utils.batch_utils import _infer_batch_shape
 
 
-
 if TYPE_CHECKING:
     from core.geometry.diffusion_geometry import DiffusionGeometry
     from tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace

@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from tensors.tensor02.tensor02 import Tensor02
 
 
-
 class Tensor02Space(BaseTensorSpace):
     """
     Space of general (0,2)-tensors Ω⁰²(M).
