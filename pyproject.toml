@@ -22,5 +22,5 @@ include = ["*"]
 cache_dir = ".pytest_cache"
 addopts = "--ignore=.vscode"
 norecursedirs = [".vscode", ".*"]
-pythonpath = ["src"]
+pythonpath = ["."]
 testpaths = ["tests"]
