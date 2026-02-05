@@ -147,7 +147,8 @@ def test_form_error_handling():
         dg.form_space(1).wrap(np.random.rand(dg.n_function_basis))
 
     if dg.dim >= 2:
-        form1 = dg.form_space(1).wrap(np.random.rand(dg.n_coefficients * dg.dim))
+        form1 = dg.form_space(1).wrap(
+            np.random.rand(dg.n_coefficients * dg.dim))
         form2 = dg.form_space(2).wrap(
             np.random.rand(dg.n_coefficients * int(comb(dg.dim, 2)))
         )

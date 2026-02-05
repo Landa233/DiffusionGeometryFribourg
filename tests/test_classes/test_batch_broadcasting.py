@@ -2,9 +2,9 @@ import pytest
 import numpy as np
 from functools import cached_property
 
-from src.core.diffusion.markov_triples import ImmersedMarkovTriple
-from src.core.geometry.diffusion_geometry import DiffusionGeometry
-from src.utils.batch_utils import compatible_batches
+from diffusion_geometry.core.diffusion.markov_triples import ImmersedMarkovTriple
+from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
+from diffusion_geometry.utils.batch_utils import compatible_batches
 
 
 # from diffusion_geometry.classes.main import DiffusionGeometry
