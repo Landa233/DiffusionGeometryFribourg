@@ -2,9 +2,7 @@ import numpy as np
 import pytest
 from scipy.special import comb
 
-from diffusion_geometry.classes.operators import LinearOperator
-from diffusion_geometry.classes.tensor_spaces import VectorFieldSpace
-from diffusion_geometry.classes.tensors import Function
+from src.tensors.vector_fields.vector_field_space import VectorFieldSpace
 
 
 def test_projection_round_trip(setup_geom):
