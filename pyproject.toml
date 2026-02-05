@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diffusion_geometry"
+version = "0.1.0"
+description = "Computing Diffusion Geometry"
+readme = "README.md"
+authors = [
+    { name = "Iolo Jones" },
+    { name = "David Lanners" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "scipy",
+    "opt_einsum",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["diffusion_geometry*"]
+
+[tool.pytest.ini_options]
+cache_dir = ".pytest_cache"
+addopts = "--ignore=.vscode"
+norecursedirs = [".vscode", ".*"]
+pythonpath = ["."]
+testpaths = ["tests"]

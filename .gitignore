@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__
+.pytest_cache
+.pytest_cache_agent
+.DS_Store
+.vscode
+.env
+.agent
+
+# Data
+# data/
+temp.png
+demo_notebooks/temp.png
+
+wedge_test.ipynb
+
+david_tests
+my_products.ipynb
+figures/covariant_derivative_all.ipynb
+figures/lie_bracket_old.ipynb
+paper_reference.tex
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
+
+# Installers
+Miniconda3-latest-MacOSX-arm64.sh
