@@ -1,9 +1,14 @@
 import pytest
 import numpy as np
 from functools import cached_property
-from diffusion_geometry.classes.main import DiffusionGeometry
-from diffusion_geometry.classes.tensors.base import compatible_batches
-from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple
+
+from core import Immers
+from core.diffusion.markov_triples import ImmersedMarkovTriple
+from core.geometry.diffusion_geometry import DiffusionGeometry
+from utils.batch_utils import compatible_batches
+# from diffusion_geometry.classes.main import DiffusionGeometry
+# from diffusion_geometry.classes.tensors.base import compatible_batches
+# from diffusion_geometry.classes.markov_triples import ImmersedMarkovTriple
 
 
 class MockDiffusionGeometry(DiffusionGeometry):
@@ -51,7 +56,8 @@ class MockDiffusionGeometry(DiffusionGeometry):
         self._n0 = n0
 
         # Mocking for VectorField metric
-        self._gamma_mixed = np.zeros((n, self.n_coefficients, self.n_coefficients, d))
+        self._gamma_mixed = np.zeros(
+            (n, self.n_coefficients, self.n_coefficients, d))
         self._levi_civita_02_weak = np.zeros(
             (self.n_coefficients * d * d, self.n_coefficients * d)
         )
