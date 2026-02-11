@@ -8,11 +8,15 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from opt_einsum import contract
-from diffusion_geometry.utils.batch_utils import _flatten_batch_dims, _restore_batch_dims
+from diffusion_geometry.utils.batch_utils import (
+    _flatten_batch_dims,
+    _restore_batch_dims,
+)
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
+    from diffusion_geometry.tensors import BaseTensorSpace
+
 
 def _from_pointwise_basis(
     data: np.ndarray, space: "BaseTensorSpace", basis_count: int | None = None

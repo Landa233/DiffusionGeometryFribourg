@@ -23,10 +23,9 @@ from diffusion_geometry.utils.batch_utils import _infer_batch_shape, compatible_
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.forms.form_space import FormSpace
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.functions.function import Function
-    from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+    from .form_space import FormSpace
+    from diffusion_geometry.core import DiffusionGeometry
+    from diffusion_geometry.tensors import Function, VectorField
 
 
 def _wedge_product(a: "Form", b: "Form") -> "Form":
@@ -212,11 +211,10 @@ class Form(Tensor):
     """
 
     def __init__(self, space: "FormSpace", coeffs: np.ndarray, degree: int):
-        from diffusion_geometry.tensors.forms.form_space import FormSpace
+        from .form_space import FormSpace
 
         if not isinstance(space, FormSpace):
-            raise TypeError(
-                f"Form requires a FormSpace; got {type(space).__name__}.")
+            raise TypeError(f"Form requires a FormSpace; got {type(space).__name__}.")
         assert (
             space.degree == degree
         ), f"FormSpace degree mismatch: expected {space.degree}, got {degree}."
@@ -328,8 +326,7 @@ class Form(Tensor):
         """
         # Represents the tensor product of 1-forms if other is a Form.
         if isinstance(other, Form):
-            self._check_arithmetic_compatibility(
-                other, require_same_space=False)
+            self._check_arithmetic_compatibility(other, require_same_space=False)
             return _tensor_product_1_forms(self, other)
 
         # Inherits scalar and function multiplication from base class.
@@ -350,8 +347,7 @@ class Form(Tensor):
             The wedge product α ∧ β.
         """
         if isinstance(other, Form):
-            self._check_arithmetic_compatibility(
-                other, require_same_space=False)
+            self._check_arithmetic_compatibility(other, require_same_space=False)
             return _wedge_product(self, other)
 
         return super().__xor__(other)
@@ -362,7 +358,7 @@ class Form(Tensor):
 
     def sharp(self) -> "VectorField":
         """Dual vector field of a 1-form (musical isomorphism ♯)."""
-        from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+        from diffusion_geometry.tensors import VectorField
 
         assert self.degree == 1, "Sharp can only be applied to 1-forms."
         return self.dg.vector_field_space.wrap(self._coeffs)
@@ -387,7 +383,7 @@ class Form(Tensor):
         f : Function
             The resulting scalar function α(X).
         """
-        from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+        from diffusion_geometry.tensors import VectorField
 
         if self.degree != 1:
             raise TypeError("Only 1-forms can act on vector fields.")
@@ -434,8 +430,7 @@ class Form(Tensor):
         k = self.degree
         dg = self.dg
 
-        exact_potential = dg.up_laplacian(
-            k - 1).inverse()(self.codifferential())
+        exact_potential = dg.up_laplacian(k - 1).inverse()(self.codifferential())
         exact_part = exact_potential.d()
 
         if k < dg.dim:

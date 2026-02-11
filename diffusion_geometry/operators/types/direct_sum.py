@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
 
-from diffusion_geometry.operators.types.linear import LinearOperator
+from .linear import LinearOperator
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
+    from diffusion_geometry.tensors import BaseTensorSpace
 
 
 def _sum_spaces(spaces: Sequence["BaseTensorSpace"]) -> "BaseTensorSpace":
@@ -70,8 +70,7 @@ def block(block_rows: Sequence[Sequence[LinearOperator]]) -> LinearOperator:
 
     # 3. Construct combined spaces
     full_domain = domains[0] if len(domains) == 1 else _sum_spaces(domains)
-    full_codomain = codomains[0] if len(
-        codomains) == 1 else _sum_spaces(codomains)
+    full_codomain = codomains[0] if len(codomains) == 1 else _sum_spaces(codomains)
 
     # 4. Assemble weak matrix
     # Concatenate weak matrices to form the global weak matrix.

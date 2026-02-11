@@ -12,12 +12,12 @@ from typing import TYPE_CHECKING
 import numpy as np
 from opt_einsum import contract
 from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
-from diffusion_geometry.tensors.functions.function import Function
+from .function import Function
 
 # from .base import BaseTensorSpace
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.functions.function import Function
+    from .function import Function
 
 
 class FunctionSpace(BaseTensorSpace):
@@ -99,6 +99,6 @@ class FunctionSpace(BaseTensorSpace):
     # -------------------------------------------------------------------------
 
     def wrap(self, coeffs: np.ndarray) -> "Function":
-        from diffusion_geometry.tensors.functions.function import Function
+        from .function import Function
 
         return Function(self, coeffs)

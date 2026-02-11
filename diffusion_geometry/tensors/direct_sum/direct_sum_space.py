@@ -15,8 +15,8 @@ from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorS
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.direct_sum.direct_sum_element import DirectSumElement
+    from diffusion_geometry.core import DiffusionGeometry
+    from .direct_sum_element import DirectSumElement
 
 
 class DirectSumSpace(BaseTensorSpace):
@@ -89,7 +89,7 @@ class DirectSumSpace(BaseTensorSpace):
         offset = 0
         for matrix, space in zip(matrices, self._spaces):
             size = space.coeff_dimension
-            result[:, offset: offset + size, offset: offset + size] = matrix
+            result[:, offset : offset + size, offset : offset + size] = matrix
             offset += size
         return result
 
@@ -104,7 +104,7 @@ class DirectSumSpace(BaseTensorSpace):
         offset = 0
         for matrix, space in zip(matrices, self._spaces):
             size = space.coeff_dimension
-            result[offset: offset + size, offset: offset + size] = matrix
+            result[offset : offset + size, offset : offset + size] = matrix
             offset += size
         return result
 
@@ -160,7 +160,7 @@ class DirectSumSpace(BaseTensorSpace):
             rows = space.coeff_dimension
             if width:
                 result[
-                    row_offset: row_offset + rows, col_offset: col_offset + width
+                    row_offset : row_offset + rows, col_offset : col_offset + width
                 ] = basis
                 col_offset += width
             row_offset += rows
@@ -172,7 +172,7 @@ class DirectSumSpace(BaseTensorSpace):
 
     def wrap(self, coeffs: np.ndarray) -> "DirectSumElement":
         """Wrap a coefficient array into a DirectSumElement."""
-        from diffusion_geometry.tensors.direct_sum.direct_sum_element import DirectSumElement
+        from .direct_sum_element import DirectSumElement
 
         return DirectSumElement(self, coeffs)
 

@@ -12,12 +12,12 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from opt_einsum import contract
-from diffusion_geometry.tensors.base_tensor.metric_gram import gram
+from .metric_gram import gram
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.direct_sum.direct_sum_space import DirectSumSpace
+    from diffusion_geometry.core import DiffusionGeometry
+    from diffusion_geometry.tensors.direct_sum import DirectSumSpace
 
 
 class BaseTensorSpace:
@@ -100,7 +100,7 @@ class BaseTensorSpace:
     # -------------------------------------------------------------------------
 
     def __add__(self, other: object) -> "DirectSumSpace":
-        from diffusion_geometry.tensors.direct_sum.direct_sum_space import DirectSumSpace
+        from diffusion_geometry.tensors.direct_sum import DirectSumSpace
 
         if not isinstance(other, BaseTensorSpace):
             return NotImplemented
@@ -125,7 +125,7 @@ class BaseTensorSpace:
         (n, n1*C, n1*C) array
             Metric tensor at each point.
         """
-        from diffusion_geometry.tensors.base_tensor.metric_gram import metric
+        from .metric_gram import metric
 
         u_coeffs = self.dg.function_basis[:, : self.dg.n_coefficients]
         return metric(u_coeffs, self.cdc_components)
@@ -134,7 +134,7 @@ class BaseTensorSpace:
         self, a_coeffs: "np.ndarray", b_coeffs: "np.ndarray"
     ) -> "np.ndarray":
         """Apply the metric to two coefficient vectors."""
-        from diffusion_geometry.tensors.base_tensor.metric_gram import _metric_apply
+        from .metric_gram import _metric_apply
 
         return _metric_apply(
             self.dg.function_basis[:, : self.dg.n_coefficients],

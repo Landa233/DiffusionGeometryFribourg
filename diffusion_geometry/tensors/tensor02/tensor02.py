@@ -22,17 +22,10 @@ from diffusion_geometry.utils.batch_utils import _infer_batch_shape
 # from .base import Tensor, _infer_batch_shape, _from_pointwise_basis
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.tensor02.tensor02_space import Tensor02Space
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
-    from diffusion_geometry.operators.types.linear import LinearOperator
-    from diffusion_geometry.tensors.tensor02sym.tensor02sym import Tensor02Sym
-
-    # from ..operators import LinearOperator
-    # from ..tensor_spaces import Tensor02Space
-    # from ..main import DiffusionGeometry
-    # from .vector_field import VectorField
-    # from .tensor02sym import Tensor02Sym
+    from .tensor02_space import Tensor02Space
+    from diffusion_geometry.core import DiffusionGeometry
+    from diffusion_geometry.tensors import VectorField, Tensor02Sym
+    from diffusion_geometry.operators import LinearOperator
 
 
 class Tensor02(Tensor):
@@ -43,7 +36,7 @@ class Tensor02(Tensor):
     """
 
     def __init__(self, space: "Tensor02Space", coeffs: np.ndarray):
-        from diffusion_geometry.tensors.tensor02.tensor02_space import Tensor02Space
+        from .tensor02_space import Tensor02Space
 
         if not isinstance(space, Tensor02Space):
             raise TypeError(
@@ -101,8 +94,7 @@ class Tensor02(Tensor):
         # TODO: this is not correct - use ambient coords
         data = self.to_pointwise_basis().reshape(self.dg.n, self.dg.dim, self.dg.dim)
         data = self.to_pointwise_basis().reshape(self.dg.n, self.dg.dim, self.dg.dim)
-        gamma = self.dg.triple.cdc(
-            self.dg.immersion_coords, self.dg.immersion_coords)
+        gamma = self.dg.triple.cdc(self.dg.immersion_coords, self.dg.immersion_coords)
         gamma = self.dg._regularise(gamma)
 
         # Raise both covariant indices: T_{ij} -> γ^{αi} γ^{βj} T_{ij}
@@ -135,7 +127,7 @@ class Tensor02(Tensor):
         if Y is None:
             return self.operator(X)
 
-        from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+        from diffusion_geometry.tensors import VectorField
 
         # --- Bilinear form: two arguments ---
         if not isinstance(X, VectorField) or not isinstance(Y, VectorField):
@@ -151,8 +143,7 @@ class Tensor02(Tensor):
         n, n1, d = dg.n, dg.n_coefficients, dg.dim
 
         # --- Reshape coefficients ---
-        A = self.coeffs.reshape(
-            self.batch_shape + (n1, d, d))  # (..., i, j, j')
+        A = self.coeffs.reshape(self.batch_shape + (n1, d, d))  # (..., i, j, j')
         Xc = X.coeffs.reshape(self.batch_shape + (n1, d))  # (..., i1, j1)
         Yc = Y.coeffs.reshape(self.batch_shape + (n1, d))  # (..., i2, j2)
 
@@ -213,7 +204,7 @@ class Tensor02(Tensor):
         # Reshape to (n1*d, n1*d)
         weak_matrix = W4.reshape(n1 * d, n1 * d)
 
-        from diffusion_geometry.operators.types.linear import LinearOperator
+        from diffusion_geometry.operators import LinearOperator
 
         return LinearOperator(
             domain=dg.vector_field_space,

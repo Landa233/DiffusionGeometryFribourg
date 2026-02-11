@@ -13,7 +13,7 @@ from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorS
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+    from .vector_field import VectorField
     import numpy as np
 
 
@@ -32,6 +32,6 @@ class VectorFieldSpace(BaseTensorSpace):
         return self.dg.cache.gamma_coords
 
     def wrap(self, coeffs: "np.ndarray") -> "VectorField":
-        from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+        from .vector_field import VectorField
 
         return VectorField(self, coeffs)

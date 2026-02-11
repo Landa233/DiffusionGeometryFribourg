@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from scipy.special import comb
 
-from diffusion_geometry.tensors.vector_fields.vector_field_space import VectorFieldSpace
+from diffusion_geometry.tensors import VectorFieldSpace
 from diffusion_geometry import Function, LinearOperator
 
 

@@ -9,12 +9,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
 
-from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-from diffusion_geometry.utils.basis_conversions import _from_pointwise_basis, _to_pointwise_basis
+from diffusion_geometry.core import DiffusionGeometry
+from diffusion_geometry.utils.basis_conversions import (
+    _from_pointwise_basis,
+    _to_pointwise_basis,
+)
 from diffusion_geometry.utils.batch_utils import compatible_batches
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
+    from .base_tensor_space import BaseTensorSpace
 
 
 class Tensor:
@@ -215,10 +218,10 @@ class Tensor:
         if np.isscalar(other):
             return self.space.wrap(other * self.coeffs)
 
-        from diffusion_geometry.tensors.functions.function import Function
+        from diffusion_geometry.tensors import Function
+
         if isinstance(other, Function):
-            self._check_arithmetic_compatibility(
-                other, require_same_space=False)
+            self._check_arithmetic_compatibility(other, require_same_space=False)
 
             # Pointwise product
             # self: (..., n * C) -> (..., n, C)
@@ -255,7 +258,7 @@ class Tensor:
         if np.isscalar(other):
             return self * other
 
-        from diffusion_geometry.tensors.functions.function import Function
+        from diffusion_geometry.tensors import Function
 
         if isinstance(other, Function):
             return self * other
@@ -269,7 +272,7 @@ class Tensor:
         if np.isscalar(other):
             return other * self
 
-        from diffusion_geometry.tensors.functions.function import Function
+        from diffusion_geometry.tensors import Function
 
         if isinstance(other, Function):
             return other * self
@@ -285,11 +288,10 @@ class Tensor:
         if np.isscalar(other):
             return self.space.wrap(self.coeffs / other)
 
-        from diffusion_geometry.tensors.functions.function import Function
+        from diffusion_geometry.tensors import Function
 
         if isinstance(other, Function):
-            self._check_arithmetic_compatibility(
-                other, require_same_space=False)
+            self._check_arithmetic_compatibility(other, require_same_space=False)
 
             # Pointwise division
             # self: (..., n * C) -> (..., n, C)

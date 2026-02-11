@@ -2,13 +2,13 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-from diffusion_geometry.operators.types.linear import LinearOperator
+from .linear import LinearOperator
 from opt_einsum import contract
 from diffusion_geometry.utils.batch_utils import compatible_batches
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
+    from diffusion_geometry.tensors import BaseTensorSpace
 
 
 class BilinearOperator:
@@ -34,8 +34,7 @@ class BilinearOperator:
         self._strong = strong_tensor
 
         if weak_tensor is None and strong_tensor is None:
-            raise ValueError(
-                "Provide at least one of weak_tensor or strong_tensor")
+            raise ValueError("Provide at least one of weak_tensor or strong_tensor")
 
         # Expected component shape: (codim, dim_a, dim_b)
         self._component_shape = (
@@ -159,8 +158,7 @@ class BilinearOperator:
 
         # Handles batches via broadcasting if implemented carefully, but opt_einsum handles it well.
         # Shape: (..., codim, dim_a, dim_b), (..., dim_a), (..., dim_b) -> (..., codim)
-        val = contract("...iAB,...A,...B->...i",
-                       self.strong, x.coeffs, y.coeffs)
+        val = contract("...iAB,...A,...B->...i", self.strong, x.coeffs, y.coeffs)
 
         return self.codomain.wrap(val)
 

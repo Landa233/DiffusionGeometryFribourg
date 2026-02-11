@@ -15,7 +15,7 @@ from diffusion_geometry.utils.batch_utils import _infer_batch_shape
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.direct_sum.direct_sum_space import DirectSumSpace
+    from .direct_sum_space import DirectSumSpace
 
 
 class DirectSumElement(Tensor):
@@ -27,7 +27,7 @@ class DirectSumElement(Tensor):
     """
 
     def __init__(self, space: "DirectSumSpace", coeffs: np.ndarray):
-        from diffusion_geometry.tensors.direct_sum.direct_sum_space import DirectSumSpace
+        from .direct_sum_space import DirectSumSpace
 
         if not isinstance(space, DirectSumSpace):
             raise TypeError(

@@ -16,10 +16,10 @@ from diffusion_geometry.utils.batch_utils import _infer_batch_shape
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
-    from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
-    from diffusion_geometry.operators.types.linear import LinearOperator
+    from diffusion_geometry.core import DiffusionGeometry
+    from .tensor02sym_space import Tensor02SymSpace
+    from diffusion_geometry.tensors import Tensor02
+    from diffusion_geometry.operators import LinearOperator
 
 
 class Tensor02Sym(Tensor):
@@ -31,7 +31,7 @@ class Tensor02Sym(Tensor):
     """
 
     def __init__(self, space: "Tensor02SymSpace", coeffs: np.ndarray):
-        from diffusion_geometry.tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
+        from .tensor02sym_space import Tensor02SymSpace
 
         if not isinstance(space, Tensor02SymSpace):
             raise TypeError(

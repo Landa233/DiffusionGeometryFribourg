@@ -3,11 +3,14 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from diffusion_geometry.utils.batch_utils import _flatten_batch_dims, _restore_batch_dims
+from diffusion_geometry.utils.batch_utils import (
+    _flatten_batch_dims,
+    _restore_batch_dims,
+)
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
+    from diffusion_geometry.tensors import BaseTensorSpace
 
 
 class LinearOperator:
@@ -35,8 +38,7 @@ class LinearOperator:
         self._weak = weak_matrix
         self._strong = strong_matrix
         if weak_matrix is None and strong_matrix is None:
-            raise ValueError(
-                "Provide at least one of weak_matrix or strong_matrix")
+            raise ValueError("Provide at least one of weak_matrix or strong_matrix")
 
     # -------------------------------------------------------------------------
     # Properties
@@ -271,8 +273,7 @@ class LinearOperator:
         # L⁻¹ = Φ @ inv_coords @ Φ* @ G
         # Shape: (N, K) @ (K, K) @ (K, N) @ (N, N) -> (N, N)
         basis = self.domain.orthonormal_basis
-        strong_inverse = basis @ inv_coords @ (
-            basis.conj().T @ self.domain.gram)
+        strong_inverse = basis @ inv_coords @ (basis.conj().T @ self.domain.gram)
         strong_inverse = np.real_if_close(strong_inverse)
 
         return LinearOperator(

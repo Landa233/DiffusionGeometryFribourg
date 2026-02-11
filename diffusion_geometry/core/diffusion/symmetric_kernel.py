@@ -1,7 +1,11 @@
 from typing import Optional, Literal, Tuple, Callable
 import numpy as np
 
-from diffusion_geometry.core.diffusion.diffusion_process import build_symmetric_kernel_matrix, compute_eigenfunction_basis
+from .diffusion_process import (
+    build_symmetric_kernel_matrix,
+    compute_eigenfunction_basis,
+)
+
 # from diffusion_geometry.src import diffusion_process, carre_du_champ
 
 
@@ -36,10 +40,8 @@ class SymmetricKernelConstructor:
         Lazily computes (K_sym, row_sums).
         """
         if self._K_sym is None:
-            self._K_sym, self._row_sums = (
-                build_symmetric_kernel_matrix(
-                    self.kernel, self.nbr_indices
-                )
+            self._K_sym, self._row_sums = build_symmetric_kernel_matrix(
+                self.kernel, self.nbr_indices
             )
         return self._K_sym, self._row_sums
 
@@ -83,8 +85,7 @@ class SymmetricKernelConstructor:
 
         if data_matrix is None:
             # We have neither immersion_coords nor data_matrix
-            raise ValueError(
-                "data_matrix and/or immersion_coords must be provided.")
+            raise ValueError("data_matrix and/or immersion_coords must be provided.")
 
         # Compute immersion coords by regularising data_matrix
         return regularise(np.asarray(data_matrix))

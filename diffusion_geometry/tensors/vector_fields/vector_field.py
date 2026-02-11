@@ -19,12 +19,10 @@ from diffusion_geometry.utils.batch_utils import _infer_batch_shape
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.vector_fields.vector_field_space import VectorFieldSpace
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.forms.form import Form
-    from diffusion_geometry.operators.types.linear import LinearOperator
-    from diffusion_geometry.tensors.functions.function import Function
-    from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
+    from .vector_field_space import VectorFieldSpace
+    from diffusion_geometry.core import DiffusionGeometry
+    from diffusion_geometry.tensors import Form, Function, Tensor02
+    from diffusion_geometry.operators import LinearOperator
 
 
 class VectorField(Tensor):
@@ -35,7 +33,7 @@ class VectorField(Tensor):
     """
 
     def __init__(self, space: "VectorFieldSpace", coeffs: np.ndarray):
-        from diffusion_geometry.tensors.vector_fields.vector_field_space import VectorFieldSpace
+        from .vector_field_space import VectorFieldSpace
 
         if not isinstance(space, VectorFieldSpace):
             raise TypeError(
@@ -141,7 +139,7 @@ class VectorField(Tensor):
 
     def flat(self) -> "Form":
         """Lower index using the metric to get a 1-form."""
-        from diffusion_geometry.tensors.forms.form import Form
+        from diffusion_geometry.tensors import Form
 
         return self.dg.form_space(1).wrap(self._coeffs)
 
@@ -169,7 +167,7 @@ class VectorField(Tensor):
             self.dg.measure,
         )
 
-        from diffusion_geometry.operators.types.linear import LinearOperator
+        from diffusion_geometry.operators import LinearOperator
 
         return LinearOperator(
             domain=self.dg.function_space,
@@ -197,7 +195,7 @@ class VectorField(Tensor):
 
     def __matmul__(self, f):
         """Shorthand for calling the vector field on a function."""
-        from diffusion_geometry.tensors.functions.function import Function
+        from diffusion_geometry.tensors import Function
 
         if isinstance(f, Function):
             return self.__call__(f)

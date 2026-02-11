@@ -12,8 +12,8 @@ from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorS
 
 if TYPE_CHECKING:
     import numpy as np
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.forms.form import Form
+    from diffusion_geometry.core import DiffusionGeometry
+    from .form import Form
 
 
 class FormSpace(BaseTensorSpace):
@@ -48,6 +48,6 @@ class FormSpace(BaseTensorSpace):
         return self.dg.cache.gamma_coords_compound(self.degree)[1]
 
     def wrap(self, coeffs: "np.ndarray") -> "Form":
-        from diffusion_geometry.tensors.forms.form import Form
+        from .form import Form
 
         return Form(self, coeffs, degree=self.degree)

@@ -6,34 +6,45 @@ from typing import TYPE_CHECKING, Optional, Union
 import numpy as np
 from opt_einsum import contract
 
-from diffusion_geometry.core.diffusion.carre_du_champ import carre_du_champ_graph, carre_du_champ_knn
-from diffusion_geometry.core.diffusion.diffusion_process import knn_graph, markov_chain
-from diffusion_geometry.core.diffusion.markov_triples import ImmersedMarkovTriple
-from diffusion_geometry.core.diffusion.regularise import regularise_bandlimit, regularise_diffusion
-from diffusion_geometry.core.diffusion.symmetric_kernel import SymmetricKernelConstructor
+from diffusion_geometry.core import (
+    carre_du_champ_graph,
+    carre_du_champ_knn,
+    knn_graph,
+    markov_chain,
+    ImmersedMarkovTriple,
+    regularise_bandlimit,
+    regularise_diffusion,
+    SymmetricKernelConstructor,
+)
 
-from diffusion_geometry.operators.differential_operators import derivative
-from diffusion_geometry.operators.differential_operators.hessian import hessian_02_sym_weak, hessian_functions
-from diffusion_geometry.operators.differential_operators.laplacian import up_delta_weak
-from diffusion_geometry.operators.differential_operators.levi_civita import levi_civita_02_weak
-from diffusion_geometry.operators.differential_operators.lie_bracket import lie_bracket_weak
-from diffusion_geometry.operators.types.bilinear import BilinearOperator
-from diffusion_geometry.operators.types.linear import LinearOperator, zero
-
+from diffusion_geometry.operators import (
+    derivative_weak,
+    hessian_02_sym_weak,
+    hessian_functions,
+    up_delta_weak,
+    levi_civita_02_weak,
+    lie_bracket_weak,
+    BilinearOperator,
+    LinearOperator,
+    zero,
+)
 
 from diffusion_geometry.utils.batch_utils import compatible_batches
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.base_tensor.base_tensor import Tensor
-    from diffusion_geometry.tensors.forms.form_space import FormSpace
-    from diffusion_geometry.tensors.functions.function import Function
-    from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
-    from diffusion_geometry.tensors.tensor02sym.tensor02sym import Tensor02Sym
-    from diffusion_geometry.tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
-    from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
-    from diffusion_geometry.tensors.vector_fields.vector_field_space import VectorFieldSpace
-    from diffusion_geometry.tensors.tensor02.tensor02_space import Tensor02Space
-    from diffusion_geometry.tensors.functions.function_space import FunctionSpace
+    from diffusion_geometry.tensors import (
+        Tensor,
+        Form,
+        Function,
+        VectorField,
+        Tensor02,
+        Tensor02Sym,
+        FormSpace,
+        FunctionSpace,
+        VectorFieldSpace,
+        Tensor02Space,
+        Tensor02SymSpace,
+    )
 
 
 class DiffusionGeometry:
@@ -81,7 +92,8 @@ class DiffusionGeometry:
         self.n_coefficients = min(self.n_coefficients, self.n_function_basis)
 
         # Cache for all the reused objects
-        from diffusion_geometry.core.geometry.cache import DiffusionGeometryCache
+        from diffusion_geometry.core import DiffusionGeometryCache
+
         self.cache = DiffusionGeometryCache(self.triple)
 
     def __eq__(self, other: object) -> bool:
@@ -158,8 +170,7 @@ class DiffusionGeometry:
         bandwidths = kwargs.get("bandwidths")
         n_function_basis = kwargs.get("n_function_basis", 50)
         n_coefficients = kwargs.pop("n_coefficients", None)
-        regularisation_method = kwargs.get(
-            "regularisation_method", "diffusion")
+        regularisation_method = kwargs.get("regularisation_method", "diffusion")
         rcond = kwargs.pop("rcond", 1e-5)
         measure = kwargs.get("measure")
         function_basis = kwargs.get("function_basis")
@@ -182,8 +193,7 @@ class DiffusionGeometry:
         elif regularisation_method == "none":
             regularise = None
         else:
-            raise ValueError(
-                f"Unknown regularisation method: {regularisation_method}")
+            raise ValueError(f"Unknown regularisation method: {regularisation_method}")
 
         # Define carré du champ
         cdc = partial(
@@ -434,13 +444,15 @@ class DiffusionGeometry:
     @cached_property
     def function_space(self) -> FunctionSpace:
         """Space of functions."""
-        from diffusion_geometry.tensors.functions.function_space import FunctionSpace
+        from diffusion_geometry.tensors import FunctionSpace
+
         return FunctionSpace(self)
 
     @cached_property
     def vector_field_space(self) -> VectorFieldSpace:
         """Space of vector fields."""
-        from diffusion_geometry.tensors.vector_fields.vector_field_space import VectorFieldSpace
+        from diffusion_geometry.tensors import VectorFieldSpace
+
         return VectorFieldSpace(self)
 
     @lru_cache(maxsize=None)
@@ -449,19 +461,22 @@ class DiffusionGeometry:
         if degree == 0:
             return self.function_space
 
-        from diffusion_geometry.tensors.forms.form_space import FormSpace
+        from diffusion_geometry.tensors import FormSpace
+
         return FormSpace(self, degree)
 
     @cached_property
     def tensor02_space(self) -> Tensor02Space:
         """Space of general (0,2)-tensors."""
-        from diffusion_geometry.tensors.tensor02.tensor02_space import Tensor02Space
+        from diffusion_geometry.tensors import Tensor02Space
+
         return Tensor02Space(self)
 
     @cached_property
     def tensor02sym_space(self) -> Tensor02SymSpace:
         """Space of symmetric (0,2)-tensors."""
-        from diffusion_geometry.tensors.tensor02sym.tensor02sym_space import Tensor02SymSpace
+        from diffusion_geometry.tensors import Tensor02SymSpace
+
         return Tensor02SymSpace(self)
 
     # -------------------------------------------------------------------------
@@ -531,8 +546,7 @@ class DiffusionGeometry:
         assert compatible_batches(
             a.batch_shape, b.batch_shape
         ), f"Batch shapes {a.batch_shape} vs {b.batch_shape} are not compatible"
-        result = contract("AB,...A,...B->...",
-                          a.space.gram, a.coeffs, b.coeffs)
+        result = contract("AB,...A,...B->...", a.space.gram, a.coeffs, b.coeffs)
         if result.ndim == 0:
             return float(result)
         return result
@@ -568,7 +582,7 @@ class DiffusionGeometry:
         ∇ : A ↦ 𝔛(M)
         f ↦ ∇f
         """
-        weak_matrix = derivative.derivative_weak(
+        weak_matrix = derivative_weak(
             self.triple.function_basis,
             self.cache.gamma_mixed,
             None,
@@ -599,7 +613,7 @@ class DiffusionGeometry:
                 weak_matrix=self.grad.weak,
             )
         _, compound_matrices = self.cache.gamma_coords_compound(k)
-        weak_matrix = derivative.derivative_weak(
+        weak_matrix = derivative_weak(
             self.triple.function_basis,
             self.cache.gamma_mixed,
             compound_matrices,
@@ -664,8 +678,7 @@ class DiffusionGeometry:
                 codomain=space,
                 weak_matrix=weak_matrix,
             )
-        gamma_submatrices, compound_matrices = self.cache.gamma_coords_compound(
-            k)
+        gamma_submatrices, compound_matrices = self.cache.gamma_coords_compound(k)
         weak_matrix = up_delta_weak(
             self.cache.gamma_functions,
             self.cache.gamma_mixed,
@@ -839,8 +852,7 @@ class DiffusionGeometry:
                 )
         R_XYXY = self.riemann_curvature(X, Y, X, Y)
         denominator = self.g(X, X) * self.g(Y, Y) - self.g(X, Y) ** 2
-        denominator = np.where(
-            denominator == 0, np.finfo(float).eps, denominator)
+        denominator = np.where(denominator == 0, np.finfo(float).eps, denominator)
         return R_XYXY / denominator
 
     # -------------------------------------------------------------------------
@@ -863,7 +875,8 @@ class DiffusionGeometry:
         f : Function
             Function object expanded in the basis {φ_i}.
         """
-        from diffusion_geometry.tensors.functions.function import Function
+        from diffusion_geometry.tensors import Function
+
         return Function.from_pointwise_basis(f_data, self)
 
     def vector_field(self, X_data, mode="pullback"):
@@ -890,15 +903,14 @@ class DiffusionGeometry:
                 "Vector field data must have trailing shape "
                 f"({self.n}, {self.dim}), got {X_data.shape}"
             )
-        from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
+        from diffusion_geometry.tensors import VectorField
 
         if mode == "pullback":
             return VectorField.from_pointwise_basis(X_data, self)
         elif mode == "reconstruct":
             return VectorField.from_reconstruction(X_data, self)
         else:
-            raise ValueError(
-                'Mode must be either "pullback" or "reconstruct".')
+            raise ValueError('Mode must be either "pullback" or "reconstruct".')
 
     def form(self, form_data, degree):
         """
@@ -922,7 +934,7 @@ class DiffusionGeometry:
             return self.function(form_data)
 
         form_data = np.asarray(form_data)
-        from diffusion_geometry.tensors.forms.form import Form
+        from diffusion_geometry.tensors import Form
 
         return Form.from_pointwise_basis(form_data, self, degree)
 
@@ -930,12 +942,14 @@ class DiffusionGeometry:
         """Create a Tensor02 object from data basis values."""
 
         tensor_data = np.asarray(tensor_data)
-        from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
+        from diffusion_geometry.tensors import Tensor02
+
         return Tensor02.from_pointwise_basis(tensor_data, self)
 
     def tensor02sym(self, tensor_data):
         """Create a symmetric (0,2)-tensor object from data basis values."""
 
         tensor_data = np.asarray(tensor_data)
-        from diffusion_geometry.tensors.tensor02sym.tensor02sym import Tensor02Sym
+        from diffusion_geometry.tensors import Tensor02Sym
+
         return Tensor02Sym.from_pointwise_basis(tensor_data, self)

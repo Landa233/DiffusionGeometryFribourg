@@ -7,13 +7,13 @@ from __future__ import annotations
 from functools import cached_property
 from typing import TYPE_CHECKING
 
-from diffusion_geometry.core.diffusion.carre_du_champ import gamma_02
+from diffusion_geometry.core import gamma_02
 from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
 
 
 if TYPE_CHECKING:
     import numpy as np
-    from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
+    from .tensor02 import Tensor02
 
 
 class Tensor02Space(BaseTensorSpace):
@@ -32,6 +32,6 @@ class Tensor02Space(BaseTensorSpace):
         return gamma_02(self.dg.cache.gamma_coords)
 
     def wrap(self, coeffs: "np.ndarray") -> "Tensor02":
-        from diffusion_geometry.tensors.tensor02.tensor02 import Tensor02
+        from .tensor02 import Tensor02
 
         return Tensor02(self, coeffs)

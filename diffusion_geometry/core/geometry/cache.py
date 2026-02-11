@@ -3,11 +3,9 @@ from typing import Tuple
 
 import numpy as np
 
-from diffusion_geometry.core.diffusion.carre_du_champ import gamma_compound
-from diffusion_geometry.core.diffusion.markov_triples import ImmersedMarkovTriple
-# from diffusion_geometry.classes.base import GeometryEngine
-from diffusion_geometry.operators.differential_operators.hessian import hessian_coords, hessian_functions
-from diffusion_geometry.core.geometry.geometry_engine import GeometryEngine
+from diffusion_geometry.core import gamma_compound, ImmersedMarkovTriple
+from diffusion_geometry.operators import hessian_coords, hessian_functions
+from .geometry_engine import GeometryEngine
 
 
 class DiffusionGeometryCache(GeometryEngine):

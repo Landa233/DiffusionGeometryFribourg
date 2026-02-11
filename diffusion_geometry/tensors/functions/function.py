@@ -14,16 +14,17 @@ from opt_einsum import contract
 from diffusion_geometry.tensors.base_tensor.base_tensor import Tensor
 
 
-from diffusion_geometry.utils.basis_conversions import _from_pointwise_basis, _to_pointwise_basis
+from diffusion_geometry.utils.basis_conversions import (
+    _from_pointwise_basis,
+    _to_pointwise_basis,
+)
 from diffusion_geometry.utils.batch_utils import _infer_batch_shape
 
 
 if TYPE_CHECKING:
-    from diffusion_geometry.tensors.functions.function_space import FunctionSpace
-    from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
-    from diffusion_geometry.tensors.vector_fields.vector_field import VectorField
-    from diffusion_geometry.tensors.forms.form import Form
-    from diffusion_geometry.tensors.tensor02sym.tensor02sym import Tensor02Sym
+    from .function_space import FunctionSpace
+    from diffusion_geometry.core import DiffusionGeometry
+    from diffusion_geometry.tensors import VectorField, Form, Tensor02Sym
 
 
 class Function(Tensor):
@@ -35,7 +36,7 @@ class Function(Tensor):
     """
 
     def __init__(self, space: "FunctionSpace", coeffs: np.ndarray):
-        from diffusion_geometry.tensors.functions.function_space import FunctionSpace
+        from .function_space import FunctionSpace
 
         if not isinstance(space, FunctionSpace):
             raise TypeError(
