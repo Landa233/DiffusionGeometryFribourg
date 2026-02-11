@@ -15,7 +15,6 @@ dependencies = ["numpy", "scipy", "opt_einsum", "scikit-learn"]
 test = ["pytest"]
 
 [tool.setuptools.packages.find]
-where = ["src"]
 include = ["*"]
 
 [tool.pytest.ini_options]
