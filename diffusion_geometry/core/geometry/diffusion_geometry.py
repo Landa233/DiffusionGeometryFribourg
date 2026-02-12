@@ -17,8 +17,7 @@ from diffusion_geometry.core import (
     SymmetricKernelConstructor,
 )
 
-from diffusion_geometry import operators
-from diffusion_geometry import tensors
+from diffusion_geometry import operators, tensors
 
 from diffusion_geometry.utils.batch_utils import compatible_batches
 

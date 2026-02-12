@@ -1,4 +1,10 @@
-from .core import DiffusionGeometry
+from .core import (
+    DiffusionGeometry,
+    DiffusionGeometryCache,
+    MarkovTriple,
+    ImmersedMarkovTriple,
+    SymmetricKernelConstructor,
+)
 from .tensors import (
     Function,
     VectorField,
@@ -15,6 +21,10 @@ from .operators import LinearOperator, BilinearOperator
 
 __all__ = [
     "DiffusionGeometry",
+    "DiffusionGeometryCache",
+    "MarkovTriple",
+    "ImmersedMarkovTriple",
+    "SymmetricKernelConstructor",
     "Function",
     "VectorField",
     "Form",
