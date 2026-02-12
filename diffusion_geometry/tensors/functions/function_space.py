@@ -14,8 +14,6 @@ from opt_einsum import contract
 from diffusion_geometry.tensors.base_tensor.base_tensor_space import BaseTensorSpace
 from .function import Function
 
-# from .base import BaseTensorSpace
-
 if TYPE_CHECKING:
     from .function import Function
 
