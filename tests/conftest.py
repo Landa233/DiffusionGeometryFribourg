@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from scipy.special import comb
 
-from diffusion_geometry.core.geometry.diffusion_geometry import DiffusionGeometry
+from diffusion_geometry.core import DiffusionGeometry
 
 
 SAMPLE_COUNT = 20
