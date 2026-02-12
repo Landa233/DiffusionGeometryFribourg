@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+from opt_einsum import contract
 import plotly
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
@@ -476,7 +477,7 @@ def hodge_star_2_form(omega, orientation: int = +1) -> np.ndarray:
         eps[0, 1, 2] = eps[1, 2, 0] = eps[2, 0, 1] = +1
         eps[0, 2, 1] = eps[2, 1, 0] = eps[1, 0, 2] = -1
         # v^i = (1/2) ε^{ijk} ω_{jk}
-        star = -orientation * 0.5 * np.einsum("ijk,njk->ni", eps, omega)
+        star = -orientation * 0.5 * contract("ijk,njk->ni", eps, omega)
         return star  # (n,3)
 
     else:

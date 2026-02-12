@@ -99,7 +99,7 @@ class Tensor02(Tensor):
 
         # Raise both covariant indices: T_{ij} -> γ^{αi} γ^{βj} T_{ij}
         # Shape: (n, d, d), (n, d, d), (n, d, d) -> (n, d, d)
-        ambient = np.einsum("nai,nbj,nij->nab", gamma, gamma, data)
+        ambient = contract("nai,nbj,nij->nab", gamma, gamma, data)
 
         return ambient
 

@@ -2,6 +2,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 import numpy as np
+from opt_einsum import contract
 
 from diffusion_geometry.utils.batch_utils import (
     _flatten_batch_dims,
@@ -59,14 +60,14 @@ class LinearOperator:
         """The operator matrix in the weak form (bilinear form) relative to the bases."""
         if self._weak is not None:
             return self._weak
-        return self.codomain.gram @ self._strong
+        return contract("ij,jk->ik", self.codomain.gram, self._strong)
 
     @cached_property
     def matrix(self) -> np.ndarray:
         """The operator matrix in the strong form relative to the bases."""
         if self._strong is not None:
             return self._strong
-        return self.codomain.gram_inv @ self._weak
+        return contract("ij,jk->ik", self.codomain.gram_inv, self._weak)
 
     @cached_property
     def adjoint(self) -> "LinearOperator":
@@ -146,7 +147,7 @@ class LinearOperator:
         return LinearOperator(
             domain=other.domain,
             codomain=self.codomain,
-            weak_matrix=self.weak @ other.matrix,
+            weak_matrix=contract("ij,jk->ik", self.weak, other.matrix),
         )
 
     # -------------------------------------------------------------------------
@@ -177,7 +178,7 @@ class LinearOperator:
         # Restricted operator in the orthonormal basis: A = Φ* W Φ
         # where Φ is the orthonormal basis and W is the weak matrix.
         # Shape: (K, N) @ (N, N) @ (N, K) -> (K, K)
-        weak_conjugated = basis.conj().T @ self.weak @ basis
+        weak_conjugated = contract("nk,nm,ml->kl", basis.conj(), self.weak, basis)
 
         if self.is_self_adjoint:
             eigvals, eigvecs_coords = np.linalg.eigh(weak_conjugated)
@@ -224,7 +225,7 @@ class LinearOperator:
 
         # Project coordinates back to the full coefficient space: V = Φ @ eigvecs_coords
         # Shape: (N, K) @ (K, K) -> (N, K)
-        eigenvectors = self.domain.orthonormal_basis @ eigvecs_coords
+        eigenvectors = contract("ik,kj->ij", self.domain.orthonormal_basis, eigvecs_coords)
         eigenvectors = np.real_if_close(eigenvectors.T)
         return eigvals, self.domain.wrap(eigenvectors)
 
@@ -256,7 +257,12 @@ class LinearOperator:
             eigvecs_kept = eigvecs_coords[:, mask]  # (K, K_kept)
             inv_vals = 1.0 / eigvals[mask]  # (K_kept,)
             # (K, K_kept) * (K_kept,) @ (K_kept, K) -> (K, K)
-            inv_coords = (eigvecs_kept * inv_vals) @ eigvecs_kept.conj().T
+            inv_coords = contract(
+                "ik,jk,k->ij",
+                eigvecs_kept,
+                eigvecs_kept.conj(),
+                inv_vals,
+            )
         # Case 2: Non-self-adjoint -> A⁻¹ = V Λ⁻¹ V⁻¹
         else:
             inv_vals = np.zeros_like(eigvals)
@@ -267,13 +273,14 @@ class LinearOperator:
             eigvecs_inv = np.linalg.solve(
                 eigvecs_coords.T, np.eye(eigvecs_coords.shape[0])
             ).T
-            inv_coords = weighted @ eigvecs_inv
+            inv_coords = contract("ij,jk->ik", weighted, eigvecs_inv)
 
         # Lift the inverse back to the original coefficient space:
         # L⁻¹ = Φ @ inv_coords @ Φ* @ G
         # Shape: (N, K) @ (K, K) @ (K, N) @ (N, N) -> (N, N)
         basis = self.domain.orthonormal_basis
-        strong_inverse = basis @ inv_coords @ (basis.conj().T @ self.domain.gram)
+        right_lift = contract("ik,ij->kj", basis.conj(), self.domain.gram)
+        strong_inverse = contract("ik,kl,lj->ij", basis, inv_coords, right_lift)
         strong_inverse = np.real_if_close(strong_inverse)
 
         return LinearOperator(
@@ -310,7 +317,7 @@ class LinearOperator:
         ), f"Input tensor belongs to {tensor_obj.space}, expected {self.domain}."
 
         coeffs_flat, batch_shape = _flatten_batch_dims(tensor_obj.coeffs)
-        result_flat = coeffs_flat @ self.matrix.T
+        result_flat = contract("bi,oi->bo", coeffs_flat, self.matrix)
         result = _restore_batch_dims(result_flat, batch_shape)
         return self.codomain.wrap(result)
 

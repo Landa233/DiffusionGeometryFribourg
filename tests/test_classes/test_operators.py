@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import warnings
 from diffusion_geometry.operators import (
     block,
     hstack,
@@ -145,3 +146,23 @@ def test_spectrum_api_defaults(setup_geom):
     res_explicit = op.spectrum(eigvals_only=False)
     assert isinstance(res_explicit, tuple)
     assert len(res_explicit) == 2
+
+
+def test_grad_application_avoids_matmul_runtime_warnings(setup_geom):
+    dg = setup_geom
+    f = dg.function_space.zeros()
+    if dg.n_function_basis > 1:
+        f.coeffs[1] = 1.0
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", RuntimeWarning)
+        X = f.grad()
+        _ = X.coeffs
+        _ = X.to_ambient()
+
+    matmul_warnings = [
+        w
+        for w in caught
+        if "matmul" in str(w.message) and w.filename.endswith("linear.py")
+    ]
+    assert not matmul_warnings
