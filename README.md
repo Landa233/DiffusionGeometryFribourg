@@ -69,7 +69,7 @@ If you use this software in your research, please cite:
 @article{jones2026computing,
   title={Computing Diffusion Geometry},
   author={Jones, Iolo and Lanners, David},
-  journal={arXiv preprint},
+  journal={arXiv preprint arXiv:2602.06006},
   year={2026}
 }
 
