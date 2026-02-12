@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 
 from diffusion_geometry.core import gamma_compound, ImmersedMarkovTriple
-from diffusion_geometry.operators import hessian_coords, hessian_functions
+from diffusion_geometry import operators
 from .geometry_engine import GeometryEngine
 
 
@@ -114,7 +114,7 @@ class DiffusionGeometryCache(GeometryEngine):
         Hessian matrix tensor H(phi_k)(x_i, x_j).
         Regularised.
         """
-        hess = hessian_functions(
+        hess = operators.hessian_functions(
             self.triple.function_basis,
             self.triple.immersion_coords,
             self.gamma_coords_regularised,
@@ -130,7 +130,7 @@ class DiffusionGeometryCache(GeometryEngine):
         Hessian of the coordinates H(x_k)(x_i, x_j).
         Regularised.
         """
-        hess = hessian_coords(
+        hess = operators.hessian_coords(
             self.triple.immersion_coords,
             self.gamma_coords_regularised,
             cdc=self.triple.cdc,

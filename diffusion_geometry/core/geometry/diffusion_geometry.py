@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property, lru_cache, partial
-from typing import TYPE_CHECKING, Optional, Union
+from typing import Optional, Union
 
 import numpy as np
 from opt_einsum import contract
@@ -17,35 +17,10 @@ from diffusion_geometry.core import (
     SymmetricKernelConstructor,
 )
 
-from diffusion_geometry.operators import (
-    derivative_weak,
-    hessian_02_sym_weak,
-    hessian_functions,
-    up_delta_weak,
-    levi_civita_02_weak,
-    lie_bracket_weak,
-    BilinearOperator,
-    LinearOperator,
-    zero,
-)
+from diffusion_geometry import operators
+from diffusion_geometry import tensors
 
 from diffusion_geometry.utils.batch_utils import compatible_batches
-
-if TYPE_CHECKING:
-    from diffusion_geometry.tensors import (
-        Tensor,
-        Form,
-        Function,
-        VectorField,
-        Tensor02,
-        Tensor02Sym,
-        FormSpace,
-        FunctionSpace,
-        VectorFieldSpace,
-        Tensor02Space,
-        Tensor02SymSpace,
-    )
-
 
 class DiffusionGeometry:
     """
@@ -442,48 +417,39 @@ class DiffusionGeometry:
     # -------------------------------------------------------------------------
 
     @cached_property
-    def function_space(self) -> FunctionSpace:
+    def function_space(self) -> tensors.FunctionSpace:
         """Space of functions."""
-        from diffusion_geometry.tensors import FunctionSpace
-
-        return FunctionSpace(self)
+        return tensors.FunctionSpace(self)
 
     @cached_property
-    def vector_field_space(self) -> VectorFieldSpace:
+    def vector_field_space(self) -> tensors.VectorFieldSpace:
         """Space of vector fields."""
-        from diffusion_geometry.tensors import VectorFieldSpace
-
-        return VectorFieldSpace(self)
+        return tensors.VectorFieldSpace(self)
 
     @lru_cache(maxsize=None)
-    def form_space(self, degree: int) -> Union[FunctionSpace, FormSpace]:
+    def form_space(
+        self, degree: int
+    ) -> Union[tensors.FunctionSpace, tensors.FormSpace]:
         """Space of forms."""
         if degree == 0:
             return self.function_space
-
-        from diffusion_geometry.tensors import FormSpace
-
-        return FormSpace(self, degree)
+        return tensors.FormSpace(self, degree)
 
     @cached_property
-    def tensor02_space(self) -> Tensor02Space:
+    def tensor02_space(self) -> tensors.Tensor02Space:
         """Space of general (0,2)-tensors."""
-        from diffusion_geometry.tensors import Tensor02Space
-
-        return Tensor02Space(self)
+        return tensors.Tensor02Space(self)
 
     @cached_property
-    def tensor02sym_space(self) -> Tensor02SymSpace:
+    def tensor02sym_space(self) -> tensors.Tensor02SymSpace:
         """Space of symmetric (0,2)-tensors."""
-        from diffusion_geometry.tensors import Tensor02SymSpace
-
-        return Tensor02SymSpace(self)
+        return tensors.Tensor02SymSpace(self)
 
     # -------------------------------------------------------------------------
     # Riemannian metric and global inner product
     # -------------------------------------------------------------------------
 
-    def g(self, a: "Tensor", b: "Tensor") -> np.ndarray:
+    def g(self, a: "tensors.Tensor", b: "tensors.Tensor") -> np.ndarray:
         """
         Pointwise Riemannian metric of two objects in the same tensor space.
 
@@ -506,7 +472,7 @@ class DiffusionGeometry:
         ), f"Batch shapes {a.batch_shape} vs {b.batch_shape} are not compatible"
         return a.space.metric_apply(a.coeffs, b.coeffs)
 
-    def pointwise_norm(self, a: "Tensor") -> np.ndarray:
+    def pointwise_norm(self, a: "tensors.Tensor") -> np.ndarray:
         """
         Pointwise norm of a tensor field.
 
@@ -526,7 +492,9 @@ class DiffusionGeometry:
         pointwise_norm_squared = np.maximum(self.g(a, a), 0.0)
         return np.sqrt(pointwise_norm_squared)
 
-    def inner(self, a: "Tensor", b: "Tensor") -> Union[float, np.ndarray]:
+    def inner(
+        self, a: "tensors.Tensor", b: "tensors.Tensor"
+    ) -> Union[float, np.ndarray]:
         """
         L² inner product of two tensors in the same space.
 
@@ -551,7 +519,7 @@ class DiffusionGeometry:
             return float(result)
         return result
 
-    def norm(self, a: "Tensor") -> Union[float, np.ndarray]:
+    def norm(self, a: "tensors.Tensor") -> Union[float, np.ndarray]:
         """
         Global L² norm of a tensor field.
 
@@ -575,14 +543,14 @@ class DiffusionGeometry:
     # -------------------------------------------------------------------------
 
     @cached_property
-    def grad(self) -> LinearOperator:
+    def grad(self) -> operators.LinearOperator:
         """
         Gradient mapping functions to vector fields.
 
         ∇ : A ↦ 𝔛(M)
         f ↦ ∇f
         """
-        weak_matrix = derivative_weak(
+        weak_matrix = operators.derivative_weak(
             self.triple.function_basis,
             self.cache.gamma_mixed,
             None,
@@ -590,14 +558,14 @@ class DiffusionGeometry:
             0,
             self.n_coefficients,
         )
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=self.function_space,
             codomain=self.vector_field_space,
             weak_matrix=weak_matrix,
         )
 
     @lru_cache(maxsize=None)
-    def d(self, k: int) -> LinearOperator:
+    def d(self, k: int) -> operators.LinearOperator:
         """
         Exterior derivative mapping k-forms to (k+1)-forms.
 
@@ -607,13 +575,13 @@ class DiffusionGeometry:
             0 <= k < self.dim
         ), f"Exterior derivative undefined for k={k} in dim {self.dim}."
         if k == 0:
-            return LinearOperator(
+            return operators.LinearOperator(
                 domain=self.form_space(k),
                 codomain=self.form_space(k + 1),
                 weak_matrix=self.grad.weak,
             )
         _, compound_matrices = self.cache.gamma_coords_compound(k)
-        weak_matrix = derivative_weak(
+        weak_matrix = operators.derivative_weak(
             self.triple.function_basis,
             self.cache.gamma_mixed,
             compound_matrices,
@@ -621,14 +589,14 @@ class DiffusionGeometry:
             k,
             self.n_coefficients,
         )
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=self.form_space(k),
             codomain=self.form_space(k + 1),
             weak_matrix=weak_matrix,
         )
 
     @lru_cache(maxsize=None)
-    def codifferential(self, k: int) -> LinearOperator:
+    def codifferential(self, k: int) -> operators.LinearOperator:
         """
         Codifferential mapping k-forms to (k-1)-forms.
 
@@ -639,7 +607,7 @@ class DiffusionGeometry:
         return self.d(k - 1).adjoint
 
     @cached_property
-    def div(self) -> LinearOperator:
+    def div(self) -> operators.LinearOperator:
         """
         Divergence mapping vector fields to functions.
 
@@ -653,7 +621,7 @@ class DiffusionGeometry:
     # -------------------------------------------------------------------------
 
     @lru_cache(maxsize=None)
-    def up_laplacian(self, k: int) -> LinearOperator:
+    def up_laplacian(self, k: int) -> operators.LinearOperator:
         """
         Up-Laplacian mapping k-forms to k-forms.
 
@@ -662,9 +630,9 @@ class DiffusionGeometry:
         assert 0 <= k <= self.dim, f"Up-Laplacian undefined for degree k={k}."
         space = self.form_space(k)
         if k == self.dim:
-            return zero(space)
+            return operators.zero(space)
         if k == 0:
-            weak_matrix = up_delta_weak(
+            weak_matrix = operators.up_delta_weak(
                 self.cache.gamma_functions,
                 self.cache.gamma_mixed,
                 self.cache.gamma_coords,
@@ -673,13 +641,13 @@ class DiffusionGeometry:
                 self.triple.measure,
                 k,
             )
-            return LinearOperator(
+            return operators.LinearOperator(
                 domain=space,
                 codomain=space,
                 weak_matrix=weak_matrix,
             )
         gamma_submatrices, compound_matrices = self.cache.gamma_coords_compound(k)
-        weak_matrix = up_delta_weak(
+        weak_matrix = operators.up_delta_weak(
             self.cache.gamma_functions,
             self.cache.gamma_mixed,
             self.cache.gamma_coords,
@@ -689,14 +657,14 @@ class DiffusionGeometry:
             k,
             self.n_coefficients,
         )
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=space,
             codomain=space,
             weak_matrix=weak_matrix,
         )
 
     @lru_cache(maxsize=None)
-    def down_laplacian(self, k: int) -> LinearOperator:
+    def down_laplacian(self, k: int) -> operators.LinearOperator:
         """
         Down-Laplacian mapping k-forms to k-forms.
 
@@ -704,11 +672,11 @@ class DiffusionGeometry:
         """
         assert 0 <= k <= self.dim, f"Down-Laplacian undefined for degree k={k}."
         if k == 0:
-            return zero(self.function_space)
+            return operators.zero(self.function_space)
         return self.d(k - 1) @ self.codifferential(k)
 
     @lru_cache(maxsize=None)
-    def laplacian(self, k: int) -> LinearOperator:
+    def laplacian(self, k: int) -> operators.LinearOperator:
         """
         Hodge Laplacian mapping k-forms to k-forms.
 
@@ -726,14 +694,14 @@ class DiffusionGeometry:
     # -------------------------------------------------------------------------
 
     @cached_property
-    def hessian(self) -> LinearOperator:
+    def hessian(self) -> operators.LinearOperator:
         """
         Hessian operator mapping functions to symmetric (0,2)-tensors.
 
         Hess : A ↦ Sym²(T*M)
         f ↦ Hess(f) ∇df
         """
-        hess = hessian_functions(
+        hess = operators.hessian_functions(
             self.triple.function_basis,
             self.triple.immersion_coords,
             self.cache.gamma_coords_regularised,
@@ -741,27 +709,27 @@ class DiffusionGeometry:
             self.triple.regularise(self.cache.gamma_mixed),
             cdc=self.triple.cdc,
         )
-        weak_matrix = hessian_02_sym_weak(
+        weak_matrix = operators.hessian_02_sym_weak(
             self.triple.function_basis,
             self._regularise(hess),
             self.triple.measure,
             self.n_coefficients,
         )
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=self.function_space,
             codomain=self.tensor02sym_space,
             weak_matrix=weak_matrix,
         )
 
     @cached_property
-    def lie_bracket(self) -> BilinearOperator:
+    def lie_bracket(self) -> operators.BilinearOperator:
         """
         Lie bracket bilinear operator on vector fields.
         [ ⋅ , ⋅ ] : 𝔛(M) × 𝔛(M) → 𝔛(M)
 
         [X, Y] acts on functions f as [X, Y](f) = X(Y(f)) - Y(X(f)).
         """
-        weak_tensor = lie_bracket_weak(
+        weak_tensor = operators.lie_bracket_weak(
             self.triple.function_basis,
             self.triple.immersion_coords,
             self.cache.gamma_coords,
@@ -769,7 +737,7 @@ class DiffusionGeometry:
             self.n_coefficients,
             cdc=self.triple.cdc,
         )
-        return BilinearOperator(
+        return operators.BilinearOperator(
             domain_a=self.vector_field_space,
             domain_b=self.vector_field_space,
             codomain=self.vector_field_space,
@@ -777,7 +745,7 @@ class DiffusionGeometry:
         )
 
     @cached_property
-    def levi_civita(self) -> LinearOperator:
+    def levi_civita(self) -> operators.LinearOperator:
         """
         Levi-Civita connection mapping vector fields to (0,2)-tensors.
 
@@ -787,7 +755,7 @@ class DiffusionGeometry:
         The induced operator of ∇Y is the standard covariant derivative
         X ↦ ∇ₓY.
         """
-        weak_matrix = levi_civita_02_weak(
+        weak_matrix = operators.levi_civita_02_weak(
             self.triple.function_basis,
             self.cache.gamma_mixed,
             self.cache.gamma_coords,
@@ -795,14 +763,18 @@ class DiffusionGeometry:
             self.triple.measure,
             self.n_coefficients,
         )
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=self.vector_field_space,
             codomain=self.tensor02_space,
             weak_matrix=weak_matrix,
         )
 
     def riemann_curvature(
-        self, X: VectorField, Y: VectorField, Z: VectorField, W: VectorField
+        self,
+        X: tensors.VectorField,
+        Y: tensors.VectorField,
+        Z: tensors.VectorField,
+        W: tensors.VectorField,
     ) -> np.array:
         """
         Compute the Riemann curvature tensor R(X, Y, Z, W) as a scalar function.
@@ -830,7 +802,9 @@ class DiffusionGeometry:
         term3 = self.levi_civita(Z)(self.lie_bracket(X, Y), W)
         return term1 - term2 - term3
 
-    def sectional_curvature(self, X: VectorField, Y: VectorField) -> np.ndarray:
+    def sectional_curvature(
+        self, X: tensors.VectorField, Y: tensors.VectorField
+    ) -> np.ndarray:
         """
         Compute the sectional curvature K(X, Y) for the plane spanned by X and Y.
 
@@ -875,9 +849,7 @@ class DiffusionGeometry:
         f : Function
             Function object expanded in the basis {φ_i}.
         """
-        from diffusion_geometry.tensors import Function
-
-        return Function.from_pointwise_basis(f_data, self)
+        return tensors.Function.from_pointwise_basis(f_data, self)
 
     def vector_field(self, X_data, mode="pullback"):
         """
@@ -903,12 +875,10 @@ class DiffusionGeometry:
                 "Vector field data must have trailing shape "
                 f"({self.n}, {self.dim}), got {X_data.shape}"
             )
-        from diffusion_geometry.tensors import VectorField
-
         if mode == "pullback":
-            return VectorField.from_pointwise_basis(X_data, self)
+            return tensors.VectorField.from_pointwise_basis(X_data, self)
         elif mode == "reconstruct":
-            return VectorField.from_reconstruction(X_data, self)
+            return tensors.VectorField.from_reconstruction(X_data, self)
         else:
             raise ValueError('Mode must be either "pullback" or "reconstruct".')
 
@@ -934,22 +904,16 @@ class DiffusionGeometry:
             return self.function(form_data)
 
         form_data = np.asarray(form_data)
-        from diffusion_geometry.tensors import Form
-
-        return Form.from_pointwise_basis(form_data, self, degree)
+        return tensors.Form.from_pointwise_basis(form_data, self, degree)
 
     def tensor02(self, tensor_data):
         """Create a Tensor02 object from data basis values."""
 
         tensor_data = np.asarray(tensor_data)
-        from diffusion_geometry.tensors import Tensor02
-
-        return Tensor02.from_pointwise_basis(tensor_data, self)
+        return tensors.Tensor02.from_pointwise_basis(tensor_data, self)
 
     def tensor02sym(self, tensor_data):
         """Create a symmetric (0,2)-tensor object from data basis values."""
 
         tensor_data = np.asarray(tensor_data)
-        from diffusion_geometry.tensors import Tensor02Sym
-
-        return Tensor02Sym.from_pointwise_basis(tensor_data, self)
+        return tensors.Tensor02Sym.from_pointwise_basis(tensor_data, self)

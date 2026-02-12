@@ -13,6 +13,7 @@ import numpy as np
 
 
 from opt_einsum import contract
+from diffusion_geometry import operators
 from diffusion_geometry.tensors.base_tensor.base_tensor import Tensor
 from diffusion_geometry.utils.basis_conversions import _from_pointwise_basis
 from diffusion_geometry.utils.batch_utils import _infer_batch_shape
@@ -22,7 +23,6 @@ if TYPE_CHECKING:
     from .vector_field_space import VectorFieldSpace
     from diffusion_geometry.core import DiffusionGeometry
     from diffusion_geometry.tensors import Form, Function, Tensor02
-    from diffusion_geometry.operators import LinearOperator
 
 
 class VectorField(Tensor):
@@ -139,8 +139,6 @@ class VectorField(Tensor):
 
     def flat(self) -> "Form":
         """Lower index using the metric to get a 1-form."""
-        from diffusion_geometry.tensors import Form
-
         return self.dg.form_space(1).wrap(self._coeffs)
 
     # -------------------------------------------------------------------------
@@ -148,7 +146,7 @@ class VectorField(Tensor):
     # -------------------------------------------------------------------------
 
     @cached_property
-    def operator(self) -> "LinearOperator":
+    def operator(self) -> "operators.LinearOperator":
         """
         Convert the vector field to a linear operator.
 
@@ -167,9 +165,7 @@ class VectorField(Tensor):
             self.dg.measure,
         )
 
-        from diffusion_geometry.operators import LinearOperator
-
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=self.dg.function_space,
             codomain=self.dg.function_space,
             weak_matrix=weak_matrix,

@@ -11,6 +11,7 @@ import numpy as np
 
 
 from opt_einsum import contract
+from diffusion_geometry import operators
 from diffusion_geometry.tensors.base_tensor.base_tensor import Tensor
 
 from diffusion_geometry.utils.basis_conversions import _from_pointwise_basis
@@ -25,7 +26,6 @@ if TYPE_CHECKING:
     from .tensor02_space import Tensor02Space
     from diffusion_geometry.core import DiffusionGeometry
     from diffusion_geometry.tensors import VectorField, Tensor02Sym
-    from diffusion_geometry.operators import LinearOperator
 
 
 class Tensor02(Tensor):
@@ -127,9 +127,9 @@ class Tensor02(Tensor):
         if Y is None:
             return self.operator(X)
 
+        # --- Bilinear form: two arguments ---
         from diffusion_geometry.tensors import VectorField
 
-        # --- Bilinear form: two arguments ---
         if not isinstance(X, VectorField) or not isinstance(Y, VectorField):
             raise TypeError("α(X, Y) expects two VectorField arguments.")
         assert (
@@ -166,7 +166,7 @@ class Tensor02(Tensor):
         return self.dg._regularise(result)
 
     @cached_property
-    def operator(self) -> "LinearOperator":
+    def operator(self) -> "operators.LinearOperator":
         """
         Return the operator form α^{op}: 𝔛(M) → 𝔛(M), defined by
             ⟨α^{op}(X), Y⟩ = ∫ α(X, Y) dμ.
@@ -204,9 +204,7 @@ class Tensor02(Tensor):
         # Reshape to (n1*d, n1*d)
         weak_matrix = W4.reshape(n1 * d, n1 * d)
 
-        from diffusion_geometry.operators import LinearOperator
-
-        return LinearOperator(
+        return operators.LinearOperator(
             domain=dg.vector_field_space,
             codomain=dg.vector_field_space,
             weak_matrix=weak_matrix,

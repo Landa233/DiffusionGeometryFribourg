@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
 
-from diffusion_geometry.core import DiffusionGeometry
 from diffusion_geometry.utils.basis_conversions import (
     _from_pointwise_basis,
     _to_pointwise_basis,
@@ -17,6 +16,7 @@ from diffusion_geometry.utils.basis_conversions import (
 from diffusion_geometry.utils.batch_utils import compatible_batches
 
 if TYPE_CHECKING:
+    from diffusion_geometry.core import DiffusionGeometry
     from .base_tensor_space import BaseTensorSpace
 
 

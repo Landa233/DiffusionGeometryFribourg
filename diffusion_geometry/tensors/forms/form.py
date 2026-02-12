@@ -358,8 +358,6 @@ class Form(Tensor):
 
     def sharp(self) -> "VectorField":
         """Dual vector field of a 1-form (musical isomorphism ♯)."""
-        from diffusion_geometry.tensors import VectorField
-
         assert self.degree == 1, "Sharp can only be applied to 1-forms."
         return self.dg.vector_field_space.wrap(self._coeffs)
 
@@ -383,10 +381,10 @@ class Form(Tensor):
         f : Function
             The resulting scalar function α(X).
         """
-        from diffusion_geometry.tensors import VectorField
-
         if self.degree != 1:
             raise TypeError("Only 1-forms can act on vector fields.")
+        from diffusion_geometry.tensors import VectorField
+
         if not isinstance(X, VectorField):
             raise TypeError("Expected a VectorField as the argument.")
         assert (
