@@ -5,8 +5,8 @@ Tests for the enhanced Form class with differential operators and function multi
 import numpy as np
 import pytest
 from scipy.special import comb
-from diffusion_geometry.classes.main import DiffusionGeometry
-from diffusion_geometry.classes.tensors import Function, Form
+from diffusion_geometry.core import DiffusionGeometry
+from diffusion_geometry.tensors import Function, Form
 
 
 def test_enhanced_form_creation(setup_geom):
@@ -147,7 +147,8 @@ def test_form_error_handling():
         dg.form_space(1).wrap(np.random.rand(dg.n_function_basis))
 
     if dg.dim >= 2:
-        form1 = dg.form_space(1).wrap(np.random.rand(dg.n_coefficients * dg.dim))
+        form1 = dg.form_space(1).wrap(
+            np.random.rand(dg.n_coefficients * dg.dim))
         form2 = dg.form_space(2).wrap(
             np.random.rand(dg.n_coefficients * int(comb(dg.dim, 2)))
         )

@@ -1,5 +1,5 @@
 import numpy as np
-from diffusion_geometry.classes.main import DiffusionGeometry
+from diffusion_geometry.core import DiffusionGeometry
 
 
 def test_from_edges_cycle_graph():

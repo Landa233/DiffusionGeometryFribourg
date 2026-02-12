@@ -7,26 +7,15 @@ name = "diffusion_geometry"
 version = "0.1.0"
 description = "Computing Diffusion Geometry"
 readme = "README.md"
-authors = [
-    { name = "Iolo Jones" },
-    { name = "David Lanners" }
-]
+authors = [{ name = "Iolo Jones" }, { name = "David Lanners" }]
 requires-python = ">=3.8"
-dependencies = [
-    "numpy",
-    "scipy",
-    "opt_einsum",
-    "scikit-learn",
-]
+dependencies = ["numpy", "scipy", "opt_einsum", "scikit-learn"]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-]
+test = ["pytest"]
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["diffusion_geometry*"]
+include = ["*"]
 
 [tool.pytest.ini_options]
 cache_dir = ".pytest_cache"

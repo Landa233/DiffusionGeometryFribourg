@@ -4,7 +4,7 @@ Tests for DirectSumSpace functionality.
 
 import pytest
 import numpy as np
-from diffusion_geometry.classes.tensor_spaces import DirectSumSpace
+from diffusion_geometry.tensors import DirectSumSpace
 
 
 def test_direct_sum_creation(setup_geom):

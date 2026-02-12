@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
-from diffusion_geometry.classes.tensors.tensor02 import Tensor02
-from diffusion_geometry.classes.tensors.tensor02sym import Tensor02Sym
-from diffusion_geometry.classes.operators.bilinear import BilinearOperator
+from diffusion_geometry.tensors.tensor02 import Tensor02
+from diffusion_geometry.tensors.tensor02sym import Tensor02Sym
+from diffusion_geometry.operators import BilinearOperator
 
 
 def test_tensor02_transpose(setup_geom):

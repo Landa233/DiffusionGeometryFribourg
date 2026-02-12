@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
 
-from diffusion_geometry.src.basis_utils import (
+from diffusion_geometry.utils.basis_utils import (
     get_wedge_basis_indices,
     kp1_children_and_signs,
 )
-from diffusion_geometry.src.carre_du_champ import gamma_compound
+from diffusion_geometry.core import gamma_compound
 
 
 def test_get_wedge_basis_indices_content():

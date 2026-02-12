@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from diffusion_geometry.src.carre_du_champ import (
+from diffusion_geometry.core import (
     carre_du_champ_knn,
     carre_du_champ_graph,
 )

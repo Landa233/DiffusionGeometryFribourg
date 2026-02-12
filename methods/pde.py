@@ -5,8 +5,8 @@ from scipy.sparse.linalg import eigsh
 from scipy.linalg import eigh, svd
 from opt_einsum import contract
 
-from diffusion_geometry.classes.operators import LinearOperator
-from diffusion_geometry.classes.tensors import Function
+from diffusion_geometry.operators import LinearOperator
+from diffusion_geometry.tensors import Function
 import plotly.express as px
 from tqdm import tqdm
 import os

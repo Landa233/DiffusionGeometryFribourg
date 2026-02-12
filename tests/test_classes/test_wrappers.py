@@ -6,14 +6,14 @@ import math
 import numpy as np
 import pytest
 from opt_einsum import contract
-from diffusion_geometry.classes.tensors import (
+from diffusion_geometry.tensors import (
     Function,
     VectorField,
     Form,
     Tensor02,
     Tensor02Sym,
 )
-from diffusion_geometry.src.basis_utils import get_symmetric_basis_indices
+from diffusion_geometry.utils.basis_utils import get_symmetric_basis_indices
 
 
 def test_function_creation_and_properties(setup_geom):

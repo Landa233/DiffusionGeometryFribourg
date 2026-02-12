@@ -6,18 +6,10 @@ __pycache__
 .vscode
 .env
 .agent
+.venv
 
-# Data
-# data/
-temp.png
-demo_notebooks/temp.png
-
-wedge_test.ipynb
-
-david_tests
-my_products.ipynb
-figures/covariant_derivative_all.ipynb
-figures/lie_bracket_old.ipynb
+# Project details
+AGENTS.md
 paper_reference.tex
 
 # Build artifacts

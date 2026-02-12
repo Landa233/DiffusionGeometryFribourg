@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from diffusion_geometry.classes.main import DiffusionGeometry
+# from diffusion_geometry.core import DiffusionGeometry
 
 
 def test_metric_batching(setup_geom):
@@ -57,8 +57,10 @@ def test_inner_product_batching(setup_geom):
 
     # 2. Matching batched
     B = 3
-    f1_batch = dg.function_space.wrap(np.broadcast_to(f1_coeffs, (B, len(f1_coeffs))))
-    f2_batch = dg.function_space.wrap(np.broadcast_to(f2_coeffs, (B, len(f2_coeffs))))
+    f1_batch = dg.function_space.wrap(
+        np.broadcast_to(f1_coeffs, (B, len(f1_coeffs))))
+    f2_batch = dg.function_space.wrap(
+        np.broadcast_to(f2_coeffs, (B, len(f2_coeffs))))
 
     res_batch = dg.inner(f1_batch, f2_batch)
     assert res_batch.shape == (B,)
@@ -87,8 +89,10 @@ def test_bilinear_operator_batching(setup_geom):
 
     # 2. Matching batched
     B = 4
-    X_batch = dg.vector_field_space.wrap(np.broadcast_to(X_coeffs, (B, len(X_coeffs))))
-    Y_batch = dg.vector_field_space.wrap(np.broadcast_to(Y_coeffs, (B, len(Y_coeffs))))
+    X_batch = dg.vector_field_space.wrap(
+        np.broadcast_to(X_coeffs, (B, len(X_coeffs))))
+    Y_batch = dg.vector_field_space.wrap(
+        np.broadcast_to(Y_coeffs, (B, len(Y_coeffs))))
 
     res_batch = dg.lie_bracket(X_batch, Y_batch)
     assert res_batch.batch_shape == (B,)

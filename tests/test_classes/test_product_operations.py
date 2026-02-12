@@ -7,7 +7,7 @@ import pytest
 import unittest
 from opt_einsum import contract
 from scipy.special import comb
-from diffusion_geometry.classes.tensors import Form, Function, VectorField
+from diffusion_geometry.tensors import Form, Function, VectorField
 
 
 def test_scalar_multiplication(setup_geom):
@@ -81,7 +81,7 @@ def test_tensor_product_1_forms(setup_geom):
 
     # alpha * beta -> (0,2)-tensor
     prod = alpha * beta
-    from diffusion_geometry.classes.tensors.tensor02 import Tensor02
+    from diffusion_geometry.tensors.tensor02 import Tensor02
 
     assert isinstance(prod, Tensor02)
 
@@ -182,7 +182,7 @@ def test_tensor02_product(setup_geom):
 
     # Tensor02 * Function (inherited from Tensor)
     res = T * f
-    from diffusion_geometry.classes.tensors.tensor02 import Tensor02
+    from diffusion_geometry.tensors.tensor02 import Tensor02
 
     assert isinstance(res, Tensor02)
     assert res.shape == T.shape
@@ -249,7 +249,7 @@ def test_exhaustive_arithmetic(setup_geom):
     f = dg.function_space.wrap(np.random.rand(dg.n_function_basis))
     v = dg.vector_field_space.wrap(np.random.rand(dg.n_coefficients * dg.dim))
     form = dg.form_space(1).wrap(np.random.rand(dg.n_coefficients * dg.dim))
-    from diffusion_geometry.classes.tensors.tensor02 import Tensor02
+    from diffusion_geometry.tensors.tensor02 import Tensor02
 
     t02 = Tensor02.from_coeffs(np.random.rand(dg.n_coefficients * dg.dim * dg.dim), dg)
     scalar = 3.0
@@ -305,7 +305,7 @@ def test_exhaustive_products(setup_geom):
     f = dg.function_space.wrap(np.random.rand(dg.n_function_basis))
     v = dg.vector_field_space.wrap(np.random.rand(dg.n_coefficients * dg.dim))
     form = dg.form_space(1).wrap(np.random.rand(dg.n_coefficients * dg.dim))
-    from diffusion_geometry.classes.tensors.tensor02 import Tensor02
+    from diffusion_geometry.tensors.tensor02 import Tensor02
 
     t02 = Tensor02.from_coeffs(np.random.rand(dg.n_coefficients * dg.dim * dg.dim), dg)
     scalar = 2.0
@@ -405,7 +405,7 @@ def test_exhaustive_wedge(setup_geom):
     # 1-form ^ 1-form -> 2-form (if dim >= 2)
     res_wedge = form ^ form
     if dg.dim < 2:
-        from diffusion_geometry.classes.tensors import Function
+        from diffusion_geometry.tensors import Function
 
         assert isinstance(res_wedge, Function)
     else:
@@ -504,7 +504,7 @@ def test_wedge_product_zero(setup_geom):
     # omega ^ alpha has degree d+1 > d.
     # The library returns a zero Function (0-form) in this case to avoid "oversized forms".
     res = omega ^ alpha
-    from diffusion_geometry.classes.tensors import Function
+    from diffusion_geometry.tensors import Function
 
     assert isinstance(res, Function)
     assert np.allclose(res.coeffs, 0.0)

@@ -3,8 +3,8 @@
 import numpy as np
 from opt_einsum import contract
 
-from diffusion_geometry.classes.operators import BilinearOperator, LinearOperator
-from diffusion_geometry.classes.tensors import Function, VectorField
+from diffusion_geometry.operators import BilinearOperator, LinearOperator
+from diffusion_geometry.tensors import Function, VectorField, Tensor02SymSpace, Tensor02Space
 
 
 def test_hessian_operator(setup_geom):

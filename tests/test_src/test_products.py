@@ -2,9 +2,9 @@
 Tests for the products module, particularly hodge_star function.
 """
 
-from diffusion_geometry.classes.main import DiffusionGeometry
-from diffusion_geometry.classes.tensors import Form, Function
-from diffusion_geometry.classes.tensors.form import _wedge_product, wedge_operator
+from diffusion_geometry.core import DiffusionGeometry
+from diffusion_geometry.tensors import Form, Function
+from diffusion_geometry.tensors.forms.form import _wedge_product, wedge_operator
 import numpy as np
 from scipy.special import comb
 from tests.conftest import setup_geom
@@ -15,7 +15,7 @@ def test_wedge_operator():
     Verify that the linearised wedge operator produces the same result
     as directly computing the wedge product of two forms.
     """
-    from diffusion_geometry.classes.operators import LinearOperator
+    from diffusion_geometry.operators import LinearOperator
 
     # Problem setup
     d = 6  # ambient dimension
