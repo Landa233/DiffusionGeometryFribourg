@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
-from scipy.sparse import diags, coo_matrix
+from scipy.sparse import diags, coo_matrix, issparse
 from scipy.sparse.linalg import eigsh
 
 
@@ -262,7 +262,18 @@ def compute_eigenfunction_basis(
     # Compute eigenfunctions of K via symmetric normalisation.
     sym_normalisation = diags(row_sums ** (-1 / 2))
     K_sym = sym_normalisation @ symmetric_kernel_matrix @ sym_normalisation
-    _, eigenfunctions = eigsh(K_sym, n0, which="LM", tol=1e-2)
+    n = K_sym.shape[0]
+    n0_eff = int(min(max(1, n0), n))
+
+    if n0_eff < n:
+        _, eigenfunctions = eigsh(K_sym, n0_eff, which="LM", tol=1e-2)
+    else:
+        # eigsh requires k < n; for full bases, use dense Hermitian eigendecomposition.
+        K_sym_dense = K_sym.toarray() if issparse(K_sym) else np.asarray(K_sym)
+        eigenvalues, eigenvectors = np.linalg.eigh(K_sym_dense)
+        top_idx = np.argsort(np.abs(eigenvalues))[-n0_eff:]
+        eigenfunctions = eigenvectors[:, top_idx[::-1]]
+
     u = sym_normalisation @ eigenfunctions
 
     # Reorder in increasing complexity and normalise so φ_0 = 1.0.

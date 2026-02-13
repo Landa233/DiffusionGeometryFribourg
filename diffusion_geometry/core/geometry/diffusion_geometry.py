@@ -179,8 +179,9 @@ class DiffusionGeometry:
         else:
             raise ValueError(f"Unknown regularisation method: {regularisation_method}")
 
+        immersion_regularise = regularise if regularise is not None else np.asarray
         immersion_coords = constructor.resolve_immersion(
-            regularise, data_matrix, immersion_coords
+            immersion_regularise, data_matrix, immersion_coords
         )
 
         # Define carré du champ
@@ -356,6 +357,7 @@ class DiffusionGeometry:
 
         return cls(
             triple=triple,
+            n_coefficients=n_coefficients,
             rcond=rcond,
         )
 
