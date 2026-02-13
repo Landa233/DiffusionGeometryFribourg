@@ -148,6 +148,21 @@ def test_spectrum_api_defaults(setup_geom):
     assert len(res_explicit) == 2
 
 
+def test_spectrum_eigenvector_batch_scaling_with_numpy(setup_geom):
+    dg = setup_geom
+    if dg.dim < 1:
+        pytest.skip("Requires dim >= 1")
+
+    vals, vecs = (dg.up_laplacian(1) + 1.0 * dg.down_laplacian(1)).spectrum()
+    weights = np.exp(-vals)
+    expected = vecs.coeffs * weights.reshape(vecs.batch_shape + (1,))
+
+    for out in (weights * vecs, vecs * weights, np.multiply(weights, vecs)):
+        assert out.__class__ is vecs.__class__
+        assert out.batch_shape == vecs.batch_shape
+        assert np.allclose(out.coeffs, expected)
+
+
 def test_grad_application_avoids_matmul_runtime_warnings(setup_geom):
     dg = setup_geom
     f = dg.function_space.zeros()

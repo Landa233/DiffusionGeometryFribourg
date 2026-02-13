@@ -28,6 +28,8 @@ class Tensor:
     coefficient functions {φ_i} and their derivatives.
     """
 
+    __array_priority__ = 1000
+
     def __init__(
         self,
         space: "BaseTensorSpace",
@@ -190,6 +192,54 @@ class Tensor:
 
         return True
 
+    def _broadcast_batch_scalars(
+        self, other
+    ) -> tuple[np.ndarray, tuple[int, ...]] | None:
+        """
+        Return ``other`` broadcast over this tensor's batch axes when numeric.
+
+        This treats non-tensor array-likes as batch-wise scalar weights.
+        The coefficient axis is never matched against ``other``.
+        """
+        if isinstance(other, Tensor):
+            return None
+
+        try:
+            scalars = np.asarray(other)
+        except Exception:
+            return None
+
+        if scalars.dtype == np.dtype("O"):
+            return None
+
+        if not (
+            np.issubdtype(scalars.dtype, np.number)
+            or np.issubdtype(scalars.dtype, np.bool_)
+        ):
+            return None
+
+        try:
+            target_batch_shape = np.broadcast_shapes(self.batch_shape, scalars.shape)
+        except ValueError:
+            return None
+
+        return np.broadcast_to(scalars, target_batch_shape), target_batch_shape
+
+    def _broadcast_coeffs_to_batch(self, batch_shape: tuple[int, ...]) -> np.ndarray:
+        """Broadcast coefficients to a target batch shape, preserving coeff axis."""
+        return np.broadcast_to(self.coeffs, batch_shape + (self.coeffs.shape[-1],))
+
+    @staticmethod
+    def _ufunc_where_is_supported(where) -> bool:
+        """
+        Support only trivial where=True semantics for arithmetic ufunc dispatch.
+        """
+        if where is True:
+            return True
+        if np.isscalar(where):
+            return bool(where)
+        return False
+
     def __neg__(self):
         return self.space.wrap(-self.coeffs)
 
@@ -243,10 +293,84 @@ class Tensor:
             coeffs = _from_pointwise_basis(product_pw, self.space)
             return self.space.wrap(coeffs)
 
+        batch_scalars = self._broadcast_batch_scalars(other)
+        if batch_scalars is not None:
+            scalars, target_batch_shape = batch_scalars
+            coeffs = self._broadcast_coeffs_to_batch(target_batch_shape)
+            return self.space.wrap(coeffs * scalars[..., np.newaxis])
+
         return NotImplemented
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        """
+        Delegate NumPy arithmetic ufuncs back to tensor dunder operators.
+
+        Why this method matters:
+        expressions like ``ndarray * Tensor`` are executed by NumPy's ufunc
+        system (e.g. ``np.multiply``). Without this hook, NumPy may fall back to
+        object-style elementwise behavior and produce ``dtype=object`` arrays of
+        Tensor objects instead of one correctly batched Tensor.
+
+        We intentionally support only a narrow subset of ufunc behavior so the
+        rules stay readable and predictable:
+        - method must be "__call__"
+        - no out= buffers
+        - where must be trivially true
+        - only basic arithmetic ufuncs used in this codebase
+        """
+        if method != "__call__":
+            return NotImplemented
+
+        # We do not support ufunc writes into Tensor outputs via out=.
+        out = kwargs.get("out", None)
+        if out is not None:
+            out_args = out if isinstance(out, tuple) else (out,)
+            if any(arg is not None for arg in out_args):
+                return NotImplemented
+
+        # Keep semantics simple: masked updates are out of scope here.
+        if not self._ufunc_where_is_supported(kwargs.get("where", True)):
+            return NotImplemented
+
+        if ufunc is np.negative and len(inputs) == 1:
+            operand = inputs[0]
+            if isinstance(operand, Tensor):
+                return -operand
+            return NotImplemented
+
+        if len(inputs) != 2:
+            return NotImplemented
+
+        left, right = inputs
+        dispatch = {
+            np.add: ("__add__", "__radd__"),
+            np.subtract: ("__sub__", "__rsub__"),
+            np.multiply: ("__mul__", "__rmul__"),
+            np.true_divide: ("__truediv__", "__rtruediv__"),
+            np.divide: ("__truediv__", "__rtruediv__"),
+        }
+        # Explicit map keeps supported ufuncs obvious and easy to audit.
+        methods = dispatch.get(ufunc)
+        if methods is None:
+            return NotImplemented
+
+        left_method, right_method = methods
+        if isinstance(left, Tensor):
+            result = getattr(left, left_method)(right)
+            if result is not NotImplemented:
+                return result
+
+        if isinstance(right, Tensor):
+            reverse = getattr(right, right_method, None)
+            if reverse is not None:
+                result = reverse(left)
+                if result is not NotImplemented:
+                    return result
+
+        return NotImplemented
 
     def __xor__(self, other):
         """
@@ -315,6 +439,12 @@ class Tensor:
 
             coeffs = _from_pointwise_basis(quotient_pw, self.space)
             return self.space.wrap(coeffs)
+
+        batch_scalars = self._broadcast_batch_scalars(other)
+        if batch_scalars is not None:
+            scalars, target_batch_shape = batch_scalars
+            coeffs = self._broadcast_coeffs_to_batch(target_batch_shape)
+            return self.space.wrap(coeffs / scalars[..., np.newaxis])
 
         return NotImplemented
 

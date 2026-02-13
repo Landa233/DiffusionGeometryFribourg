@@ -118,6 +118,19 @@ def test_function_arithmetic(setup_geom):
     with pytest.raises(AssertionError):
         _ = batched_f * mismatched
 
+    # ndarray-left arithmetic should route through tensor dispatch and stay typed.
+    offsets = np.array([0.0, 0.25, 1.0])
+    shifted = offsets + f
+    scaled = np.multiply(offsets, f)
+    shifted_where = np.add(offsets, f, where=np.bool_(True))
+
+    assert isinstance(shifted, Function)
+    assert shifted.batch_shape == (len(offsets),)
+    assert isinstance(scaled, Function)
+    assert scaled.batch_shape == (len(offsets),)
+    assert isinstance(shifted_where, Function)
+    assert shifted_where.batch_shape == (len(offsets),)
+
 
 def test_vector_field_arithmetic(setup_geom):
     """Test arithmetic operations on VectorField objects."""

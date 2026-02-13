@@ -39,6 +39,88 @@ def test_scalar_multiplication(setup_geom):
     assert np.allclose(scaled_batched.coeffs, coeffs_batched * 3.0)
 
 
+def test_numpy_batch_scalars_scale_tensor_batches(setup_geom):
+    dg = setup_geom
+    if dg.dim < 1:
+        pytest.skip("Requires dim >= 1")
+
+    rng = np.random.default_rng(0)
+    B = 5
+    coeff_dim = dg.n_coefficients * dg.dim
+    coeffs = rng.standard_normal((B, coeff_dim))
+    omega = dg.form_space(1).wrap(coeffs)
+    weights = np.exp(-np.linspace(0.2, 1.2, B))
+
+    expected_scaled = coeffs * weights[:, None]
+    expected_divided = coeffs / weights[:, None]
+
+    for out in (
+        weights * omega,
+        omega * weights,
+        np.multiply(weights, omega),
+        np.multiply(weights, omega, where=np.bool_(True)),
+    ):
+        assert isinstance(out, Form)
+        assert out.batch_shape == (B,)
+        assert np.allclose(out.coeffs, expected_scaled)
+
+    for out in (omega / weights, np.divide(omega, weights)):
+        assert isinstance(out, Form)
+        assert out.batch_shape == (B,)
+        assert np.allclose(out.coeffs, expected_divided)
+
+    # Non-broadcastable batch scalars should fail cleanly.
+    with pytest.raises(TypeError):
+        _ = np.multiply(np.ones(B + 1), omega)
+
+
+def test_function_numpy_batch_constants(setup_geom):
+    dg = setup_geom
+    rng = np.random.default_rng(1)
+    f = dg.function(rng.standard_normal(dg.n))
+
+    offsets = np.array([0.0, 0.5, -1.25, 2.0])
+    shifted = offsets + f
+    shifted_np = np.add(offsets, f)
+    shifted_where = np.add(offsets, f, where=np.bool_(True))
+
+    expected_shifted = np.stack([(f + float(c)).coeffs for c in offsets], axis=0)
+    assert isinstance(shifted, Function)
+    assert shifted.batch_shape == (len(offsets),)
+    assert np.allclose(shifted.coeffs, expected_shifted)
+    assert isinstance(shifted_np, Function)
+    assert np.allclose(shifted_np.coeffs, expected_shifted)
+    assert isinstance(shifted_where, Function)
+    assert np.allclose(shifted_where.coeffs, expected_shifted)
+
+    scales = np.array([0.5, 1.0, 2.0, 3.0])
+    scaled = np.multiply(scales, f)
+    expected_scaled = np.stack([(float(c) * f).coeffs for c in scales], axis=0)
+    assert isinstance(scaled, Function)
+    assert scaled.batch_shape == (len(scales),)
+    assert np.allclose(scaled.coeffs, expected_scaled)
+
+    numerators = np.array([0.25, 1.0, 2.5, 4.0])
+    divided = numerators / f
+    expected_divided = np.stack(
+        [
+            (
+                Function.from_pointwise_basis(np.full((dg.n,), float(c)), dg) / f
+            ).coeffs
+            for c in numerators
+        ],
+        axis=0,
+    )
+    assert isinstance(divided, Function)
+    assert divided.batch_shape == (len(numerators),)
+    assert np.allclose(divided.coeffs, expected_divided)
+
+    # Non-broadcastable batch constants should fail cleanly for batched functions.
+    f_batched = dg.function_space.wrap(np.stack([f.coeffs, f.coeffs, f.coeffs, f.coeffs]))
+    with pytest.raises(TypeError):
+        _ = np.add(np.ones(len(offsets) + 1), f_batched)
+
+
 def test_function_form_product(setup_geom):
     dg = setup_geom
     if dg.dim < 1:

@@ -141,13 +141,22 @@ class Function(Tensor):
     # Arithmetic
     # -------------------------------------------------------------------------
 
+    def _constant_from_batch_scalars(
+        self, scalars: np.ndarray, batch_shape: tuple[int, ...]
+    ) -> "Function":
+        """Construct a constant function batch from scalar batch values."""
+        constant_data = np.broadcast_to(
+            scalars[..., np.newaxis], batch_shape + (self.dg.n,)
+        )
+        return Function.from_pointwise_basis(constant_data, self.dg)
+
     def __add__(self, other):
         """
-        Add a function or a scalar.
+        Add a function or numeric batch-wise constants.
 
         Parameters
         ----------
-        other : Function or scalar
+        other : Function, scalar, or array-like
             The object to add.
 
         Returns
@@ -155,14 +164,27 @@ class Function(Tensor):
         Function
             The resulting sum.
         """
-        if np.isscalar(other):
-            # Create constant function
-            constant_data = np.full(
-                self.batch_shape + (self.dg.n,), other, dtype=self.coeffs.dtype
+        batch_scalars = self._broadcast_batch_scalars(other)
+        if batch_scalars is not None:
+            scalars, target_batch_shape = batch_scalars
+            other_function = self._constant_from_batch_scalars(
+                scalars, target_batch_shape
             )
-            other = Function.from_pointwise_basis(constant_data, self.dg)
-            return self.space.wrap(self.coeffs + other.coeffs)
+            coeffs = self._broadcast_coeffs_to_batch(target_batch_shape)
+            return self.space.wrap(coeffs + other_function.coeffs)
         return super().__add__(other)
+
+    def __rtruediv__(self, other):
+        """
+        Divide numeric batch-wise constants by this function.
+        """
+        batch_scalars = self._broadcast_batch_scalars(other)
+        if batch_scalars is None:
+            return NotImplemented
+
+        scalars, target_batch_shape = batch_scalars
+        numerator = self._constant_from_batch_scalars(scalars, target_batch_shape)
+        return numerator / self
 
     def __pow__(self, other):
         """
