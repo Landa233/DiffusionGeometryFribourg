@@ -155,6 +155,16 @@ class DiffusionGeometry:
         kernel = np.asarray(kernel)
         bandwidths = np.asarray(bandwidths) if bandwidths is not None else None
 
+        # Resolve any missing data using SymmetricKernelConstructor
+        constructor = SymmetricKernelConstructor(
+            nbr_indices=nbr_indices,
+            kernel=kernel,
+        )
+        measure = constructor.resolve_measure(measure)
+        function_basis = constructor.resolve_function_basis(
+            n_function_basis, function_basis
+        )
+
         # Define regularisation
         if regularisation_method == "bandlimit":
             regularise = partial(
@@ -169,6 +179,10 @@ class DiffusionGeometry:
         else:
             raise ValueError(f"Unknown regularisation method: {regularisation_method}")
 
+        immersion_coords = constructor.resolve_immersion(
+            regularise, data_matrix, immersion_coords
+        )
+
         # Define carré du champ
         cdc = partial(
             carre_du_champ_knn,
@@ -178,18 +192,6 @@ class DiffusionGeometry:
             use_mean_centres=use_mean_centres,
         )
 
-        # Resolve any missing data using SymmetricKernelConstructor
-        constructor = SymmetricKernelConstructor(
-            nbr_indices=nbr_indices,
-            kernel=kernel,
-        )
-        measure = constructor.resolve_measure(measure)
-        function_basis = constructor.resolve_function_basis(
-            n_function_basis, function_basis
-        )
-        immersion_coords = constructor.resolve_immersion(
-            regularise, data_matrix, immersion_coords
-        )
 
         # Create the ImmersedMarkovTriple with all this data
         triple = ImmersedMarkovTriple(

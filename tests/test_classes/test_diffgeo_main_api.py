@@ -4,6 +4,7 @@ from scipy.special import comb
 
 from diffusion_geometry.tensors import VectorFieldSpace
 from diffusion_geometry import Function, LinearOperator
+from diffusion_geometry.core import DiffusionGeometry
 
 
 def test_projection_round_trip(setup_geom):
@@ -45,3 +46,20 @@ def test_linear_operator_works_with_compatible_spaces(setup_geom):
 
     # Should not raise
     _ = canon_op @ rogue_op
+
+
+def test_from_point_cloud_bandlimit_resolves_basis_and_measure():
+    rng = np.random.default_rng(0)
+    data = rng.standard_normal((80, 3))
+
+    dg = DiffusionGeometry.from_point_cloud(
+        data_matrix=data,
+        regularisation_method="bandlimit",
+        knn_kernel=16,
+        knn_bandwidth=8,
+        n_function_basis=12,
+    )
+
+    assert dg.n == data.shape[0]
+    assert dg.immersion_coords.shape == data.shape
+    assert np.isfinite(dg.immersion_coords).all()
