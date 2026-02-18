@@ -50,6 +50,12 @@ f = model.function(values)
 # 4. Compute Calculus Operations
 grad_f = f.grad()            # Returns a VectorField
 laplacian_f = f.laplacian()  # Returns a Function
+
+# 5. Spectra of geometric Laplacians (on 1-forms / vector fields)
+hodge_eigenvalues, hodge_eigenvectors = model.laplacian(1).spectrum()
+
+connection_laplacian = model.levi_civita.adjoint @ model.levi_civita
+connection_eigenvalues, connection_eigenvectors = connection_laplacian.spectrum()
 ```
 
 <!-- ## Core Concepts
