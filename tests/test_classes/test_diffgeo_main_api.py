@@ -39,7 +39,7 @@ def test_linear_operator_works_with_compatible_spaces(setup_geom):
         weak_matrix=weak_noncanonical,
     )
 
-    vector = canonical_space.wrap(np.zeros(canonical_space.coeff_dimension))
+    vector = canonical_space.wrap(np.zeros(canonical_space.dim))
 
     # Should not raise
     rogue_op(vector)

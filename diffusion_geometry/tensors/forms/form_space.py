@@ -32,7 +32,7 @@ class FormSpace(BaseTensorSpace):
 
     def __repr__(self) -> str:
         return (
-            f"FormSpace(degree={self.degree}, coeff_dimension={self.coeff_dimension})"
+            f"FormSpace(degree={self.degree}, dim={self.dim})"
         )
 
     @property

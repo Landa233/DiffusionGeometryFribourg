@@ -336,7 +336,7 @@ def zero(
         dtype = np.result_type(domain.gram.dtype, codomain.gram.dtype)
 
     weak_matrix = np.zeros(
-        (codomain.coeff_dimension, domain.coeff_dimension), dtype=dtype
+        (codomain.dim, domain.dim), dtype=dtype
     )
     return LinearOperator(domain=domain, codomain=codomain, weak_matrix=weak_matrix)
 
@@ -351,7 +351,7 @@ def identity(
     if dtype is None:
         dtype = space.gram.dtype
 
-    strong_matrix = np.eye(space.coeff_dimension, dtype=dtype)
+    strong_matrix = np.eye(space.dim, dtype=dtype)
     return LinearOperator(domain=space, codomain=space, strong_matrix=strong_matrix)
 
 

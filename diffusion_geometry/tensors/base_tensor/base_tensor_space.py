@@ -37,7 +37,7 @@ class BaseTensorSpace:
         self.dg = dg
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(coeff_dimension={self.coeff_dimension})"
+        return f"{self.__class__.__name__}(dim={self.dim})"
 
     def __eq__(self, other: object) -> bool:
         """Spaces are equal when type, geometry, and degree (if any) match."""
@@ -86,14 +86,14 @@ class BaseTensorSpace:
         )
 
     @property
-    def component_dimension(self) -> int:
+    def component_dim(self) -> int:
         """Number of pointwise components represented per spatial sample."""
         return self.cdc_components.shape[1]
 
     @property
-    def coeff_dimension(self) -> int:
+    def dim(self) -> int:
         """Number of coefficients required to represent an element."""
-        return self.dg.n_coefficients * self.component_dimension
+        return self.dg.n_coefficients * self.component_dim
 
     # -------------------------------------------------------------------------
     # Direct sum space construction
@@ -213,6 +213,6 @@ class BaseTensorSpace:
         Tensor
             A tensor element of this space with zero coefficients.
         """
-        coeff_shape = shape + (self.coeff_dimension,)
+        coeff_shape = shape + (self.dim,)
         coeffs = np.zeros(coeff_shape)
         return self.wrap(coeffs)

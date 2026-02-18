@@ -114,8 +114,8 @@ class Tensor:
         """
         Convert to the pointwise basis at each sample point.
 
-        Expects coeffs with trailing shape (dg.n_coefficients * component_dimension).
-        Returns data with last dim (dg.n * component_dimension).
+        Expects coeffs with trailing shape (dg.n_coefficients * component_dim).
+        Returns data with last dim (dg.n * component_dim).
 
         This will work for all tensor types with num_components > 0, so not for functions
         (0-tensors with num_components = 0). It is overridden in the Function class.
@@ -277,7 +277,7 @@ class Tensor:
             # self: (..., n * C) -> (..., n, C)
             # func: (..., n) -> (..., n, 1)
 
-            c_dim = self.space.component_dimension
+            c_dim = self.space.component_dim
             n = self.dg.n
 
             self_pw = self.to_pointwise_basis()
@@ -420,7 +420,7 @@ class Tensor:
             # Pointwise division
             # self: (..., n * C) -> (..., n, C)
             # func: (..., n) -> (..., n, 1)
-            c_dim = self.space.component_dimension
+            c_dim = self.space.component_dim
             n = self.dg.n
 
             self_pw = self.to_pointwise_basis()

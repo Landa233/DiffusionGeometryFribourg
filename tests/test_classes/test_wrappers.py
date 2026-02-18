@@ -449,7 +449,7 @@ def test_form_base_class(setup_geom):
     """Test the Form base class for extensibility."""
     dg = setup_geom
     rng = np.random.default_rng(42)
-    coeffs = rng.standard_normal(dg.form_space(1).coeff_dimension)
+    coeffs = rng.standard_normal(dg.form_space(1).dim)
     form = dg.form_space(1).wrap(coeffs)
 
     assert form.dg is dg

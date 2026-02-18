@@ -54,9 +54,9 @@ class DirectSumSpace(BaseTensorSpace):
         return self._spaces
 
     @cached_property
-    def coeff_dimension(self) -> int:
+    def dim(self) -> int:
         """Dimension of the coefficient space is the sum of the dimensions of the constituent spaces."""
-        return sum(space.coeff_dimension for space in self._spaces)
+        return sum(space.dim for space in self._spaces)
 
     @cached_property
     def _coeff_slices(self) -> tuple[slice, ...]:
@@ -64,7 +64,7 @@ class DirectSumSpace(BaseTensorSpace):
         slices: list[slice] = []
         offset = 0
         for space in self._spaces:
-            size = space.coeff_dimension
+            size = space.dim
             slices.append(slice(offset, offset + size))
             offset += size
         return tuple(slices)
@@ -83,12 +83,12 @@ class DirectSumSpace(BaseTensorSpace):
         """
         assert matrices, "Direct sum with no summands"
         n = matrices[0].shape[0]
-        total = self.coeff_dimension
+        total = self.dim
         dtype = np.result_type(*(matrix.dtype for matrix in matrices))
         result = np.zeros((n, total, total), dtype=dtype)
         offset = 0
         for matrix, space in zip(matrices, self._spaces):
-            size = space.coeff_dimension
+            size = space.dim
             result[:, offset : offset + size, offset : offset + size] = matrix
             offset += size
         return result
@@ -98,12 +98,12 @@ class DirectSumSpace(BaseTensorSpace):
         Combine matrices from each summand into a single block-diagonal matrix.
         """
         assert matrices, "Direct sum with no summands"
-        total = self.coeff_dimension
+        total = self.dim
         dtype = np.result_type(*(matrix.dtype for matrix in matrices))
         result = np.zeros((total, total), dtype=dtype)
         offset = 0
         for matrix, space in zip(matrices, self._spaces):
-            size = space.coeff_dimension
+            size = space.dim
             result[offset : offset + size, offset : offset + size] = matrix
             offset += size
         return result
@@ -146,7 +146,7 @@ class DirectSumSpace(BaseTensorSpace):
     def orthonormal_basis(self) -> np.ndarray:
         """The combined orthonormal basis for the direct sum space."""
         bases = [space.orthonormal_basis for space in self._spaces]
-        total = self.coeff_dimension
+        total = self.dim
         widths = [basis.shape[1] for basis in bases]
         total_width = sum(widths)
         if total_width == 0:
@@ -157,7 +157,7 @@ class DirectSumSpace(BaseTensorSpace):
         row_offset = 0
         col_offset = 0
         for space, basis, width in zip(self._spaces, bases, widths):
-            rows = space.coeff_dimension
+            rows = space.dim
             if width:
                 result[
                     row_offset : row_offset + rows, col_offset : col_offset + width
@@ -216,5 +216,5 @@ class DirectSumSpace(BaseTensorSpace):
     def __repr__(self) -> str:
         parts = ", ".join(space.__class__.__name__ for space in self._spaces)
         return (
-            f"DirectSumSpace(spaces=[{parts}], coeff_dimension={self.coeff_dimension})"
+            f"DirectSumSpace(spaces=[{parts}], dim={self.dim})"
         )

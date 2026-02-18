@@ -19,7 +19,7 @@ def test_direct_sum_creation(setup_geom):
     ds1 = s1 + s2
     assert isinstance(ds1, DirectSumSpace)
     assert len(ds1.spaces) == 2
-    assert ds1.coeff_dimension == s1.coeff_dimension + s2.coeff_dimension
+    assert ds1.dim == s1.dim + s2.dim
 
     # Test associativity logic (implementation flattens)
     ds2 = ds1 + s1
@@ -45,8 +45,8 @@ def test_direct_sum_gram_matrix(setup_geom):
     ds = s1 + s2
     gram = ds.gram
 
-    d1 = s1.coeff_dimension
-    d2 = s2.coeff_dimension
+    d1 = s1.dim
+    d2 = s2.dim
 
     assert gram.shape == (d1 + d2, d1 + d2)
 
@@ -68,7 +68,7 @@ def test_direct_sum_gram_inv(setup_geom):
     ds = s1 + s2
 
     gram_inv = ds.gram_inv
-    d1 = s1.coeff_dimension
+    d1 = s1.dim
 
     # Should be block diagonal of inverses
     assert np.allclose(gram_inv[:d1, :d1], s1.gram_inv)
@@ -84,11 +84,11 @@ def test_direct_sum_orthonormal_basis(setup_geom):
     ds = s1 + s2
 
     basis = ds.orthonormal_basis
-    d1 = s1.coeff_dimension
+    d1 = s1.dim
     w1 = s1.orthonormal_basis.shape[1]
 
     assert basis.shape == (
-        ds.coeff_dimension,
+        ds.dim,
         s1.orthonormal_basis.shape[1] + s2.orthonormal_basis.shape[1],
     )
 
@@ -113,12 +113,12 @@ def test_direct_sum_metric_apply(setup_geom):
     rng = np.random.default_rng(42)
 
     # Create random coefficients
-    c1_a = rng.standard_normal(s1.coeff_dimension)
-    c2_a = rng.standard_normal(s2.coeff_dimension)
+    c1_a = rng.standard_normal(s1.dim)
+    c2_a = rng.standard_normal(s2.dim)
     coeffs_a = np.concatenate([c1_a, c2_a])
 
-    c1_b = rng.standard_normal(s1.coeff_dimension)
-    c2_b = rng.standard_normal(s2.coeff_dimension)
+    c1_b = rng.standard_normal(s1.dim)
+    c2_b = rng.standard_normal(s2.dim)
     coeffs_b = np.concatenate([c1_b, c2_b])
 
     # Computed via direct sum
@@ -141,8 +141,8 @@ def test_packing_and_splitting(setup_geom):
     ds = s1 + s2
 
     rng = np.random.default_rng(99)
-    coeffs1 = rng.standard_normal(s1.coeff_dimension)
-    coeffs2 = rng.standard_normal(s2.coeff_dimension)
+    coeffs1 = rng.standard_normal(s1.dim)
+    coeffs2 = rng.standard_normal(s2.dim)
 
     # Wrap individually
     t1 = s1.wrap(coeffs1)
@@ -151,8 +151,8 @@ def test_packing_and_splitting(setup_geom):
     # Pack
     packed = ds.pack(t1, t2)
     assert packed.space is ds
-    assert np.allclose(packed.coeffs[: s1.coeff_dimension], coeffs1)
-    assert np.allclose(packed.coeffs[s1.coeff_dimension :], coeffs2)
+    assert np.allclose(packed.coeffs[: s1.dim], coeffs1)
+    assert np.allclose(packed.coeffs[s1.dim :], coeffs2)
 
     # Split
     parts = ds.split_coeffs(packed.coeffs)

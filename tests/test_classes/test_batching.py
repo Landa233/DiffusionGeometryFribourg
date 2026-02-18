@@ -7,8 +7,8 @@ import numpy as np
 def test_metric_batching(setup_geom):
     dg = setup_geom
     # Create two arbitrary vectors in vector field space
-    v1_coeffs = np.random.randn(dg.vector_field_space.coeff_dimension)
-    v2_coeffs = np.random.randn(dg.vector_field_space.coeff_dimension)
+    v1_coeffs = np.random.randn(dg.vector_field_space.dim)
+    v2_coeffs = np.random.randn(dg.vector_field_space.dim)
 
     v1 = dg.vector_field_space.wrap(v1_coeffs)
     v2 = dg.vector_field_space.wrap(v2_coeffs)
@@ -45,8 +45,8 @@ def test_metric_batching(setup_geom):
 
 def test_inner_product_batching(setup_geom):
     dg = setup_geom
-    f1_coeffs = np.random.randn(dg.function_space.coeff_dimension)
-    f2_coeffs = np.random.randn(dg.function_space.coeff_dimension)
+    f1_coeffs = np.random.randn(dg.function_space.dim)
+    f2_coeffs = np.random.randn(dg.function_space.dim)
 
     f1 = dg.function_space.wrap(f1_coeffs)
     f2 = dg.function_space.wrap(f2_coeffs)
@@ -76,8 +76,8 @@ def test_inner_product_batching(setup_geom):
 def test_bilinear_operator_batching(setup_geom):
     dg = setup_geom
     # Lie bracket is bilinear: [X, Y]
-    X_coeffs = np.random.randn(dg.vector_field_space.coeff_dimension)
-    Y_coeffs = np.random.randn(dg.vector_field_space.coeff_dimension)
+    X_coeffs = np.random.randn(dg.vector_field_space.dim)
+    Y_coeffs = np.random.randn(dg.vector_field_space.dim)
 
     X = dg.vector_field_space.wrap(X_coeffs)
     Y = dg.vector_field_space.wrap(Y_coeffs)

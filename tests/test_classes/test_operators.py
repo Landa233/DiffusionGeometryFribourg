@@ -27,11 +27,11 @@ def test_block_operator_construction(setup_geom):
     block_op = block([[op1, op2], [op3, op4]])
 
     assert isinstance(block_op, LinearOperator)
-    assert block_op.domain.coeff_dimension == space.coeff_dimension * 2
-    assert block_op.codomain.coeff_dimension == space.coeff_dimension * 2
+    assert block_op.domain.dim == space.dim * 2
+    assert block_op.codomain.dim == space.dim * 2
 
     # Check shape
-    dim = space.coeff_dimension
+    dim = space.dim
     assert block_op.matrix.shape == (2 * dim, 2 * dim)
 
     # Check content roughly (since identity is stronger than weak form in implementation detail usually,
@@ -50,17 +50,17 @@ def test_hstack_vstack(setup_geom):
 
     # hstack [I, I]
     h_op = hstack([op, op])
-    assert h_op.domain.coeff_dimension == space.coeff_dimension * 2
-    assert h_op.codomain.coeff_dimension == space.coeff_dimension
+    assert h_op.domain.dim == space.dim * 2
+    assert h_op.codomain.dim == space.dim
     full_mat = h_op.matrix
-    dim = space.coeff_dimension
+    dim = space.dim
     assert np.allclose(full_mat[:, :dim], np.eye(dim))
     assert np.allclose(full_mat[:, dim:], np.eye(dim))
 
     # vstack [I, I]
     v_op = vstack([op, op])
-    assert v_op.domain.coeff_dimension == space.coeff_dimension
-    assert v_op.codomain.coeff_dimension == space.coeff_dimension * 2
+    assert v_op.domain.dim == space.dim
+    assert v_op.codomain.dim == space.dim * 2
     full_mat_v = v_op.matrix
     assert np.allclose(full_mat_v[:dim, :], np.eye(dim))
     assert np.allclose(full_mat_v[dim:, :], np.eye(dim))
@@ -111,11 +111,11 @@ def test_mixed_spaces_block(setup_geom):
 
     block_op = block([[op1, op2], [op3, op4]])
 
-    d1 = s1.coeff_dimension
-    d2 = s2.coeff_dimension
+    d1 = s1.dim
+    d2 = s2.dim
 
-    assert block_op.domain.coeff_dimension == d1 + d2
-    assert block_op.codomain.coeff_dimension == d1 + d2
+    assert block_op.domain.dim == d1 + d2
+    assert block_op.codomain.dim == d1 + d2
 
     mat = block_op.matrix
     assert mat.shape == (d1 + d2, d1 + d2)

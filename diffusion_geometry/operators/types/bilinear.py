@@ -38,9 +38,9 @@ class BilinearOperator:
 
         # Expected component shape: (codim, dim_a, dim_b)
         self._component_shape = (
-            codomain.coeff_dimension,
-            domain_a.coeff_dimension,
-            domain_b.coeff_dimension,
+            codomain.dim,
+            domain_a.dim,
+            domain_b.dim,
         )
 
     # -------------------------------------------------------------------------

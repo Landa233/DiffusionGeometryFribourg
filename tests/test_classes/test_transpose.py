@@ -33,10 +33,10 @@ def test_tensor02_transpose(setup_geom):
     # Check T(X, Y) == T.T(Y, X)
     # Create random X, Y
     X = dg.vector_field_space.wrap(
-        np.random.randn(dg.vector_field_space.coeff_dimension)
+        np.random.randn(dg.vector_field_space.dim)
     )
     Y = dg.vector_field_space.wrap(
-        np.random.randn(dg.vector_field_space.coeff_dimension)
+        np.random.randn(dg.vector_field_space.dim)
     )
 
     val1 = T(X, Y)
@@ -76,11 +76,11 @@ def test_bilinear_operator_transpose(setup_geom):
     n1, d = dg.n_coefficients, dg.dim
 
     # Strong tensor shape: (codim, dim_a, dim_b)
-    # codim = n1*d (approx, coeff_dimension)
+    # codim = n1*d (approx, dim)
     shape = (
-        codomain.coeff_dimension,
-        domain_a.coeff_dimension,
-        domain_b.coeff_dimension,
+        codomain.dim,
+        domain_a.dim,
+        domain_b.dim,
     )
 
     # Creating a full size tensor might be too big for testing if n is large
@@ -102,8 +102,8 @@ def test_bilinear_operator_transpose(setup_geom):
     assert np.allclose(B_T.strong, np.swapaxes(strong, -1, -2))
 
     # Check application B(x, y) == B.T(y, x)
-    x = domain_a.wrap(np.random.randn(domain_a.coeff_dimension))
-    y = domain_b.wrap(np.random.randn(domain_b.coeff_dimension))
+    x = domain_a.wrap(np.random.randn(domain_a.dim))
+    y = domain_b.wrap(np.random.randn(domain_b.dim))
 
     res1 = B(x, y)
     res2 = B_T(y, x)

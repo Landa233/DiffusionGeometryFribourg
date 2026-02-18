@@ -282,7 +282,7 @@ class Form(Tensor):
         Parameters
         ----------
         data : ndarray
-            Form data with trailing shape (dg.n, component_dimension).
+            Form data with trailing shape (dg.n, component_dim).
         dg : DiffusionGeometry
             The diffusion geometry instance.
         degree : int

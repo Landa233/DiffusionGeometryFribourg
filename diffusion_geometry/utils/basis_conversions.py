@@ -24,8 +24,8 @@ def _from_pointwise_basis(
     """
     Change coefficients from pointwise basis to function basis.
 
-    Expects data with trailing shape (dg.n, component_dimension).
-    Returns coeffs with last dim (basis_count * component_dimension).
+    Expects data with trailing shape (dg.n, component_dim).
+    Returns coeffs with last dim (basis_count * component_dim).
 
     Parameters
     ----------
@@ -42,9 +42,9 @@ def _from_pointwise_basis(
     ndarray
         Coefficients in the function basis.
     """
-    components = space.component_dimension
+    components = space.component_dim
     if basis_count is None:
-        basis_count = space.coeff_dimension // components
+        basis_count = space.dim // components
 
     data = np.asarray(data)
     if data.ndim < 2 or data.shape[-2:] != (space.dg.n, components):
@@ -84,8 +84,8 @@ def _to_pointwise_basis(
     """
     Change coefficients from function basis to pointwise basis.
 
-    Expects coeffs with trailing shape (basis_count * component_dimension).
-    Returns data with last dim (dg.n * component_dimension).
+    Expects coeffs with trailing shape (basis_count * component_dim).
+    Returns data with last dim (dg.n * component_dim).
 
     Parameters
     ----------
@@ -103,7 +103,7 @@ def _to_pointwise_basis(
     """
     if basis_count is None:
         basis_count = space.dg.n_coefficients
-    component_dim = space.component_dimension
+    component_dim = space.component_dim
 
     coeffs_flat, batch_shape = _flatten_batch_dims(coeffs)
     coeffs_flat_expanded = coeffs_flat.reshape(-1, basis_count, component_dim)

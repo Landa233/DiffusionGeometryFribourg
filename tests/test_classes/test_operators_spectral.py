@@ -6,7 +6,7 @@ from diffusion_geometry.operators import LinearOperator, identity, zero
 def test_spectral_decomposition_properties(setup_geom):
     dg = setup_geom
     space = dg.function_space
-    dim = space.coeff_dimension
+    dim = space.dim
 
     # 1. Self-adjoint case
     # Construct a random symmetric matrix for the weak form

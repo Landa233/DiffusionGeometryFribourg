@@ -33,7 +33,7 @@ class FunctionSpace(BaseTensorSpace):
     # -------------------------------------------------------------------------
 
     @cached_property
-    def coeff_dimension(self) -> int:
+    def dim(self) -> int:
         """Number of coefficients n_function_basis for the function space."""
         return self.dg.n_function_basis
 

@@ -36,7 +36,7 @@ class DirectSumElement(Tensor):
             )
 
         coeffs_arr, batch_shape = _infer_batch_shape(
-            coeffs, (space.coeff_dimension,), name="DirectSumElement"
+            coeffs, (space.dim,), name="DirectSumElement"
         )
         super().__init__(space, coeffs_arr, rank=None, batch_shape=batch_shape)
 
