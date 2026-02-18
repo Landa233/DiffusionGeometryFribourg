@@ -41,6 +41,12 @@ class LinearOperator:
         if weak_matrix is None and strong_matrix is None:
             raise ValueError("Provide at least one of weak_matrix or strong_matrix")
 
+    def __repr__(self) -> str:
+        return (
+            f"LinearOperator(domain={self.domain!r}, codomain={self.codomain!r}, "
+            f"shape=({self.codomain.dim}, {self.domain.dim}))"
+        )
+
     # -------------------------------------------------------------------------
     # Properties
     # -------------------------------------------------------------------------

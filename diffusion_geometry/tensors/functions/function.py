@@ -50,8 +50,8 @@ class Function(Tensor):
 
     def __repr__(self):
         return (
-            f"Function(shape={self.shape}, batch_shape={self.batch_shape}, "
-            f"dg.n={self.dg.n}, dg.dim={self.dg.dim})"
+            f"Function(space={self.space!r}, shape={self.shape}, "
+            f"batch_shape={self.batch_shape}, dg.n={self.dg.n}, dg.dim={self.dg.dim})"
         )
 
     # -------------------------------------------------------------------------

@@ -109,3 +109,15 @@ def test_bilinear_operator_transpose(setup_geom):
     res2 = B_T(y, x)
 
     assert np.allclose(res1.coeffs, res2.coeffs)
+
+
+def test_bilinear_operator_repr_includes_domains(setup_geom):
+    dg = setup_geom
+    B = dg.lie_bracket
+
+    rep = repr(B)
+
+    assert "BilinearOperator(" in rep
+    assert "domain_a=VectorFieldSpace(dim=" in rep
+    assert "domain_b=VectorFieldSpace(dim=" in rep
+    assert "codomain=VectorFieldSpace(dim=" in rep

@@ -181,3 +181,14 @@ def test_grad_application_avoids_matmul_runtime_warnings(setup_geom):
         if "matmul" in str(w.message) and w.filename.endswith("linear.py")
     ]
     assert not matmul_warnings
+
+
+def test_linear_operator_repr_includes_spaces(setup_geom):
+    dg = setup_geom
+    op = identity(dg.function_space)
+
+    rep = repr(op)
+
+    assert "LinearOperator(" in rep
+    assert "domain=FunctionSpace(dim=" in rep
+    assert "codomain=FunctionSpace(dim=" in rep

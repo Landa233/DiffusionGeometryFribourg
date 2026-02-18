@@ -49,7 +49,7 @@ class VectorField(Tensor):
 
     def __repr__(self):
         return (
-            f"VectorField(shape={self.shape}, batch_shape={self.batch_shape}, "
+            f"VectorField(space={self.space!r}, shape={self.shape}, batch_shape={self.batch_shape}, "
             f"dg.n={self.dg.n}, dg.dim={self.dg.dim})"
         )
 

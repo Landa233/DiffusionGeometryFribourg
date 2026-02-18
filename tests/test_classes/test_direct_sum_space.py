@@ -163,3 +163,14 @@ def test_packing_and_splitting(setup_geom):
     # Error checking
     with pytest.raises(AssertionError, match="Expected 2 tensors"):
         ds.pack(t1)
+
+
+def test_direct_sum_element_repr_includes_space(setup_geom):
+    dg = setup_geom
+    ds = dg.function_space + dg.vector_field_space
+    element = ds.zeros()
+
+    rep = repr(element)
+
+    assert "DirectSumElement(" in rep
+    assert "space=DirectSumSpace(" in rep

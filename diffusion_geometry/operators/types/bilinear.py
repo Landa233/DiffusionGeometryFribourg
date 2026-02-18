@@ -43,6 +43,12 @@ class BilinearOperator:
             domain_b.dim,
         )
 
+    def __repr__(self) -> str:
+        return (
+            f"BilinearOperator(domain_a={self.domain_a!r}, domain_b={self.domain_b!r}, "
+            f"codomain={self.codomain!r}, component_shape={self.component_shape})"
+        )
+
     # -------------------------------------------------------------------------
     # Properties
     # -------------------------------------------------------------------------

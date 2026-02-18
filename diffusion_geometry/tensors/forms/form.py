@@ -231,7 +231,7 @@ class Form(Tensor):
         dg = self.dg
         n_components = int(comb(dg.dim, self._degree))
         return (
-            f"Form(degree={self._degree}, shape={self.shape}, batch_shape={self.batch_shape}, "
+            f"Form(space={self.space!r}, degree={self._degree}, shape={self.shape}, batch_shape={self.batch_shape}, "
             f"components={n_components}, dg.n={dg.n}, dg.dim={dg.dim})"
         )
 

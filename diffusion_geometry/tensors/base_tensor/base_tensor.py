@@ -46,6 +46,12 @@ class Tensor:
         )
         self._data_cache = None
 
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(space={self.space!r}, shape={self.shape}, "
+            f"batch_shape={self.batch_shape}, rank={self.rank})"
+        )
+
     # -------------------------------------------------------------------------
     # Properties
     # -------------------------------------------------------------------------

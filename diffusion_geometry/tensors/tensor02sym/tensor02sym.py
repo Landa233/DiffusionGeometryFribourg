@@ -50,7 +50,7 @@ class Tensor02Sym(Tensor):
 
     def __repr__(self):
         return (
-            f"Tensor02Sym(shape={self.shape}, batch_shape={self.batch_shape}, "
+            f"Tensor02Sym(space={self.space!r}, shape={self.shape}, batch_shape={self.batch_shape}, "
             f"dg.n={self.dg.n}, dg.dim={self.dg.dim})"
         )
 
