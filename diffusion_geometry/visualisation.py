@@ -4,6 +4,7 @@ from opt_einsum import contract
 import plotly
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
+from sklearn.neighbors import NearestNeighbors
 
 import re
 import inspect
@@ -1294,3 +1295,59 @@ def overpic_labels(
         return out
     for s in out:
         print(s)
+
+
+def plot_tangent_planes_3d(tangent_bundle, data_input, angle=(3, 3, 4), zoom=None):
+    data = data_input[:, :3]
+    nbrs = NearestNeighbors(n_neighbors=4, algorithm='auto').fit(data)
+    distances, _ = nbrs.kneighbors(data)
+    rho = distances[:, 1:].mean(axis=1)
+    tangent_bundle_rescaled = 0.4 * np.median(rho) * tangent_bundle[:, :3]
+
+    n = data.shape[0]
+
+    p1 = data + tangent_bundle_rescaled[:, :, 0] + tangent_bundle_rescaled[:, :, 1]
+    p2 = data + tangent_bundle_rescaled[:, :, 1] - tangent_bundle_rescaled[:, :, 0]
+    p3 = data - tangent_bundle_rescaled[:, :, 0] - tangent_bundle_rescaled[:, :, 1]
+    p4 = data - tangent_bundle_rescaled[:, :, 1] + tangent_bundle_rescaled[:, :, 0]
+    all_p = np.concatenate((p1, p2, p3, p4), axis=0)
+
+    indices = np.arange(n)
+    simplices_1 = np.stack((indices, indices + n, indices + 2 * n)).T
+    simplices_2 = np.stack((indices, indices + 2 * n, indices + 3 * n)).T
+    simplices = np.concatenate((simplices_1, simplices_2), axis=0)
+    simplices = simplices.reshape(2 * n, 3)
+
+    fig = ff.create_trisurf(x=all_p[:, 0],
+                            y=all_p[:, 1],
+                            z=all_p[:, 2],
+                            colormap=["#8ab6ee", "#e53b4a"],
+                            simplices=simplices,
+                            show_colorbar=False,
+                            plot_edges=False,
+                            title=None)
+
+    angle_a = np.array(angle, dtype=float)
+    angle_a /= np.linalg.norm(angle_a)
+
+    scale = np.linalg.norm(data, axis=1).max()
+    if zoom is None:
+        zoom = 1 / scale
+    scale *= zoom
+    camera = dict(
+        eye=dict(x=6 * angle_a[0] / scale,
+                 y=6 * angle_a[1] / scale,
+                 z=8 * angle_a[2] / scale),
+        center=dict(x=0, y=0, z=0),
+        up=dict(x=0, y=0, z=1)
+    )
+
+    fig.update_layout(width=1000, height=700, margin=dict(l=0, r=0, t=0, b=0))
+
+    fig.update_layout(scene_camera=camera,
+                      scene=dict(aspectmode='data',
+                                 xaxis=dict(visible=False),
+                                 yaxis=dict(visible=False),
+                                 zaxis=dict(visible=False)))
+
+    return fig
