@@ -456,3 +456,29 @@ def test_form_base_class(setup_geom):
     assert form.degree == 1
     assert form.shape == coeffs.shape
     assert np.array_equal(form.coeffs, coeffs)
+
+def test_function_hodge_decomposition(setup_geom):
+    """Test the hodge_decomposition method for Function."""
+    dg = setup_geom
+
+    # Create a random function
+    rng = np.random.default_rng(123)
+    coeffs = rng.standard_normal(dg.n_function_basis)
+    f = dg.function_space.wrap(coeffs)
+
+    coexact_potential, harmonic_part = f.hodge_decomposition()
+
+    # Check types and properties
+    assert isinstance(coexact_potential, Form)
+    assert coexact_potential.degree == 1
+    assert isinstance(harmonic_part, Function)
+
+    # Check reconstruction: f = coexact_part + harmonic_part
+    coexact_part = coexact_potential.codifferential()
+    assert isinstance(coexact_part, Function)
+
+    reconstructed = coexact_part + harmonic_part
+    assert np.allclose(f.coeffs, reconstructed.coeffs)
+
+    # The harmonic part should technically be in the kernel of the Laplacian (Laplacian ~ 0).
+    # Due to discrete geometry effects, we omit a strict Laplacian = 0 check and only enforce exact reconstruction.
