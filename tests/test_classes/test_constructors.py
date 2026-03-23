@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 
+import scipy.sparse as sp
+
 from diffusion_geometry.core import DiffusionGeometry, knn_graph, markov_chain
 
 
@@ -153,6 +155,46 @@ def test_from_edges_respects_n_coefficients():
     assert dg.n == n
     assert dg.n_function_basis == n
     assert dg.n_coefficients == 4
+
+
+def test_from_sparse_matrix_constructs_correct_geometry():
+    n = 10
+    sources = np.arange(n)
+    targets = np.roll(sources, -1)
+    weights = np.random.rand(n)
+
+    # Create a sparse CSR matrix
+    sparse_matrix = sp.csr_matrix((weights, (sources, targets)), shape=(n, n))
+
+    rng = np.random.default_rng(3)
+    immersion_coords = rng.standard_normal((n, 3))
+
+    dg = DiffusionGeometry.from_sparse_matrix(
+        sparse_matrix=sparse_matrix,
+        immersion_coords=immersion_coords,
+        n_coefficients=5,
+    )
+
+    assert dg.n == n
+    assert dg.n_function_basis == n
+    assert dg.n_coefficients == 5
+    assert dg.immersion_coords.shape == (n, 3)
+
+    # Check that from_sparse_matrix delegates correctly by converting back to from_graph_kernel's inputs
+    coo = sparse_matrix.tocoo()
+    expected_edge_index = np.vstack((coo.row, coo.col))
+    expected_kernel = coo.data
+
+    dg_graph_kernel = DiffusionGeometry.from_graph_kernel(
+        edge_index=expected_edge_index,
+        kernel=expected_kernel,
+        immersion_coords=immersion_coords,
+        n_coefficients=5,
+    )
+
+    assert dg.n == dg_graph_kernel.n
+    assert dg.n_coefficients == dg_graph_kernel.n_coefficients
+    assert np.allclose(dg.immersion_coords, dg_graph_kernel.immersion_coords)
 
 
 def test_from_point_cloud_rejects_unknown_regularisation_method():

@@ -298,6 +298,39 @@ class DiffusionGeometry:
         )
 
     @classmethod
+    def from_sparse_matrix(
+        cls,
+        sparse_matrix,
+        immersion_coords: np.ndarray,
+        **kwargs,
+    ) -> "DiffusionGeometry":
+        """
+        Construct from a scipy.sparse matrix representing a graph.
+
+        This method acts as a bridge for graph libraries that output
+        scipy.sparse matrices (like MAGIC or graphtools).
+
+        Parameters
+        ----------
+        sparse_matrix : scipy.sparse matrix
+            The sparse matrix representing the graph kernel/adjacency.
+        immersion_coords : np.ndarray
+            Coordinates of the nodes.
+        **kwargs : dict, optional
+            Additional configuration parameters passed to from_graph_kernel.
+        """
+        coo = sparse_matrix.tocoo()
+        edge_index = np.vstack((coo.row, coo.col))
+        kernel = coo.data
+
+        return cls.from_graph_kernel(
+            edge_index=edge_index,
+            kernel=kernel,
+            immersion_coords=immersion_coords,
+            **kwargs,
+        )
+
+    @classmethod
     def from_graph_kernel(
         cls,
         edge_index: np.ndarray,
