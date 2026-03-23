@@ -112,6 +112,30 @@ def test_from_graph_kernel_respects_n_coefficients():
     assert dg.n_coefficients == 3
 
 
+def test_from_graph_kernel_default_measure_uses_degree_weights():
+    n = 4
+    edge_index = np.array(
+        [
+            [0, 0, 1, 2, 2, 2, 3],
+            [1, 2, 2, 0, 1, 3, 0],
+        ]
+    )
+    kernel = np.array([1.0, 3.0, 2.0, 4.0, 5.0, 1.0, 2.0])
+    immersion_coords = np.arange(n)[:, None].astype(float)
+
+    dg = DiffusionGeometry.from_graph_kernel(
+        edge_index=edge_index,
+        kernel=kernel,
+        immersion_coords=immersion_coords,
+    )
+
+    expected = np.bincount(edge_index[0], weights=kernel, minlength=n)
+    expected = expected / expected.sum()
+
+    np.testing.assert_allclose(dg.measure, expected)
+    np.testing.assert_allclose(dg.measure.sum(), 1.0)
+
+
 def test_from_edges_respects_n_coefficients():
     n = 10
     sources = np.arange(n)

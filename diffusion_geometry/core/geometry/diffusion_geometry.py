@@ -334,7 +334,8 @@ class DiffusionGeometry:
 
         n = immersion_coords.shape[0]
         if measure is None:
-            measure = np.ones(n) / n
+            measure = np.bincount(edge_index[0], weights=kernel, minlength=n)
+            measure = measure / measure.sum()
         if function_basis is None:
             function_basis = np.eye(n)
 
