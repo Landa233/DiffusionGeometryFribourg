@@ -174,3 +174,29 @@ def test_direct_sum_element_repr_includes_space(setup_geom):
 
     assert "DirectSumElement(" in rep
     assert "space=DirectSumSpace(" in rep
+
+def test_direct_sum_element_unpack(setup_geom):
+    """Test unpacking of a DirectSumElement."""
+    dg = setup_geom
+    s1 = dg.function_space
+    s2 = dg.vector_field_space
+    ds = s1 + s2
+
+    rng = np.random.default_rng(123)
+    coeffs1 = rng.standard_normal(s1.dim)
+    coeffs2 = rng.standard_normal(s2.dim)
+
+    # Wrap individually and pack to get a DirectSumElement
+    t1 = s1.wrap(coeffs1)
+    t2 = s2.wrap(coeffs2)
+    element = ds.pack(t1, t2)
+
+    # Unpack the element
+    components = element.unpack()
+
+    # Verify the unpacked components
+    assert len(components) == 2
+    assert components[0].space is s1
+    assert components[1].space is s2
+    assert np.allclose(components[0].coeffs, coeffs1)
+    assert np.allclose(components[1].coeffs, coeffs2)
