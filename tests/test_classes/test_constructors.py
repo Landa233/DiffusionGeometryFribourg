@@ -182,7 +182,7 @@ def test_from_sparse_matrix_constructs_correct_geometry():
 
     # Check that from_sparse_matrix delegates correctly by converting back to from_graph_kernel's inputs
     coo = sparse_matrix.tocoo()
-    expected_edge_index = np.vstack((coo.row, coo.col))
+    expected_edge_index = np.vstack((coo.col, coo.row))
     expected_kernel = coo.data
 
     dg_graph_kernel = DiffusionGeometry.from_graph_kernel(
@@ -195,6 +195,106 @@ def test_from_sparse_matrix_constructs_correct_geometry():
     assert dg.n == dg_graph_kernel.n
     assert dg.n_coefficients == dg_graph_kernel.n_coefficients
     assert np.allclose(dg.immersion_coords, dg_graph_kernel.immersion_coords)
+
+
+def test_graph_constructor_carre_du_champ_normalisation_known_example():
+    # Known row-stochastic kernel K[i, j] (rows sum to 1).
+    kernel_dense = np.array(
+        [
+            [0.8, 0.2, 0.0],
+            [0.1, 0.6, 0.3],
+            [0.0, 0.4, 0.6],
+        ],
+        dtype=float,
+    )
+    # Linear function over nodes.
+    f = np.array([0.0, 1.0, 2.0], dtype=float)[:, None]
+    immersion_coords = np.arange(3, dtype=float)[:, None]
+
+    # Ground truth Γ(f,f)(i) = 1/2 * sum_j K[i, j] * (f_j - f_i)^2
+    expected = 0.5 * np.array(
+        [
+            0.8 * (0.0 - 0.0) ** 2 + 0.2 * (1.0 - 0.0) ** 2,
+            0.1 * (0.0 - 1.0) ** 2 + 0.6 * (1.0 - 1.0) ** 2 + 0.3 * (2.0 - 1.0) ** 2,
+            0.4 * (1.0 - 2.0) ** 2 + 0.6 * (2.0 - 2.0) ** 2,
+        ],
+        dtype=float,
+    )
+
+    # Build canonical graph representation expected by from_graph_kernel:
+    # edge_index = [source=j, target=i] with weights K[i, j].
+    rows, cols = np.nonzero(kernel_dense)
+    edge_index = np.vstack((cols, rows))
+    weights = kernel_dense[rows, cols]
+
+    # Sparse representation stores (row=i, col=j) = K[i, j].
+    sparse_matrix = sp.csr_matrix(kernel_dense)
+
+    constructors = {
+        "from_graph_kernel": lambda: DiffusionGeometry.from_graph_kernel(
+            edge_index=edge_index,
+            kernel=weights,
+            immersion_coords=immersion_coords,
+        ),
+        "from_sparse_matrix": lambda: DiffusionGeometry.from_sparse_matrix(
+            sparse_matrix=sparse_matrix,
+            immersion_coords=immersion_coords,
+        ),
+        "from_edges": lambda: DiffusionGeometry.from_edges(
+            edge_index=edge_index,
+            immersion_coords=immersion_coords,
+        ),
+    }
+
+    for name, build in constructors.items():
+        dg = build()
+        gamma_ff = dg.triple.cdc(f, f).reshape(-1)
+
+        if name == "from_edges":
+            # from_edges ignores provided weights and uses uniform incoming
+            # averaging, so only the normalization identity is asserted.
+            assert gamma_ff.shape == expected.shape
+            assert np.all(gamma_ff >= 0)
+            continue
+
+        np.testing.assert_allclose(gamma_ff, expected, rtol=1e-12, atol=1e-12)
+
+
+def test_knn_constructor_carre_du_champ_normalisation_known_example():
+    # Known row-stochastic kernel K[i, j] (rows sum to 1).
+    kernel_dense = np.array(
+        [
+            [0.8, 0.2, 0.0],
+            [0.1, 0.6, 0.3],
+            [0.0, 0.4, 0.6],
+        ],
+        dtype=float,
+    )
+    f = np.array([0.0, 1.0, 2.0], dtype=float)[:, None]
+    immersion_coords = np.arange(3, dtype=float)[:, None]
+
+    expected = 0.5 * np.array(
+        [
+            0.8 * (0.0 - 0.0) ** 2 + 0.2 * (1.0 - 0.0) ** 2,
+            0.1 * (0.0 - 1.0) ** 2 + 0.6 * (1.0 - 1.0) ** 2 + 0.3 * (2.0 - 1.0) ** 2,
+            0.4 * (1.0 - 2.0) ** 2 + 0.6 * (2.0 - 2.0) ** 2,
+        ],
+        dtype=float,
+    )
+
+    nbr_indices = np.tile(np.arange(3), (3, 1))
+
+    dg = DiffusionGeometry.from_knn_kernel(
+        nbr_indices=nbr_indices,
+        kernel=kernel_dense,
+        immersion_coords=immersion_coords,
+        regularisation_method="none",
+        n_function_basis=3,
+        use_mean_centres=False,
+    )
+
+    gamma_ff = dg.triple.cdc(f, f).reshape(-1)
+    np.testing.assert_allclose(gamma_ff, expected, rtol=1e-12, atol=1e-12)
 
 
 def test_from_point_cloud_rejects_unknown_regularisation_method():
