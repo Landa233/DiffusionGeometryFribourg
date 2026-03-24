@@ -320,7 +320,11 @@ class DiffusionGeometry:
             Additional configuration parameters passed to from_graph_kernel.
         """
         coo = sparse_matrix.tocoo()
-        edge_index = np.vstack((coo.row, coo.col))
+        # Sparse kernels are typically stored as K[i, j] where i is the point
+        # at which local expectations are evaluated and j is the neighbour.
+        # The graph carré du champ expects edges encoded as (source=j, target=i),
+        # so we transpose the sparse (row, col) convention into (col, row).
+        edge_index = np.vstack((coo.col, coo.row))
         kernel = coo.data
 
         return cls.from_graph_kernel(
