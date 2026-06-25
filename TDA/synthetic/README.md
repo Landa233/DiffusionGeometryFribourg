@@ -6,6 +6,8 @@ Run:
 
 ```bash
 python TDA/synthetic/run_circular_coordinates.py
+python TDA/synthetic/run_cylinder_noise_ablation.py
+python TDA/synthetic/run_torus_noise_ablation.py
 python TDA/synthetic/run_klein_cut_noise_ablation.py
 ```
 

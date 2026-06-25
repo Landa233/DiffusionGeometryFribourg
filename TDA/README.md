@@ -19,6 +19,8 @@ Runnable scripts are named for their task:
 
 ```bash
 python TDA/synthetic/run_circular_coordinates.py
+python TDA/synthetic/run_cylinder_noise_ablation.py
+python TDA/synthetic/run_torus_noise_ablation.py
 python TDA/synthetic/run_klein_cut_noise_ablation.py
 python TDA/image_patches/download_data.py
 python TDA/image_patches/run_klein_cut_coordinates.py
