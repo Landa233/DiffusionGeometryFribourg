@@ -70,6 +70,51 @@ def score_decoding_file(
     }
 
 
+def build_comparison_summary(
+    scores: dict[str, dict],
+    *,
+    rat: str,
+    module: str,
+    session: str,
+    day: str,
+    physical_neighbors: int,
+    stride: int,
+    baseline_tolerance: float = 0.0,
+) -> dict:
+    """Build the persistent-vs-Hodge comparison record.
+
+    Lower physical smoothness is better. ``baseline_tolerance`` lets a sweep
+    accept tiny numerical differences as a match while keeping the default
+    comparison strict.
+    """
+
+    if "persistent" not in scores or "hodge" not in scores:
+        raise ValueError("scores must contain 'persistent' and 'hodge' entries.")
+    if baseline_tolerance < 0:
+        raise ValueError("baseline_tolerance must be non-negative.")
+
+    ranking = sorted(scores, key=lambda method: scores[method]["mean_physical_smoothness"])
+    hodge_score = scores["hodge"]["mean_physical_smoothness"]
+    persistent_score = scores["persistent"]["mean_physical_smoothness"]
+    return {
+        "rat": rat,
+        "module": module,
+        "session": session,
+        "day": day,
+        "physical_neighbors": physical_neighbors,
+        "stride": stride,
+        "baseline_tolerance": baseline_tolerance,
+        "scores": scores,
+        "ranking": ranking,
+        "hodge_at_least_persistent": bool(
+            hodge_score <= persistent_score + baseline_tolerance
+        ),
+        "mean_physical_smoothness_delta_hodge_minus_persistent": float(
+            hodge_score - persistent_score
+        ),
+    }
+
+
 def run(args: argparse.Namespace) -> None:
     data_dir = args.data_dir.resolve()
     original_dir = args.original_dir.resolve()
@@ -107,23 +152,16 @@ def run(args: argparse.Namespace) -> None:
         )
         for method, path in paths.items()
     }
-    ranking = sorted(scores, key=lambda method: scores[method]["mean_physical_smoothness"])
-    hodge_score = scores["hodge"]["mean_physical_smoothness"]
-    persistent_score = scores["persistent"]["mean_physical_smoothness"]
-    summary = {
-        "rat": args.rat,
-        "module": args.module,
-        "session": args.session,
-        "day": args.day,
-        "physical_neighbors": args.physical_neighbors,
-        "stride": args.stride,
-        "scores": scores,
-        "ranking": ranking,
-        "hodge_at_least_persistent": bool(hodge_score <= persistent_score),
-        "mean_physical_smoothness_delta_hodge_minus_persistent": float(
-            hodge_score - persistent_score
-        ),
-    }
+    summary = build_comparison_summary(
+        scores,
+        rat=args.rat,
+        module=args.module,
+        session=args.session,
+        day=args.day,
+        physical_neighbors=args.physical_neighbors,
+        stride=args.stride,
+        baseline_tolerance=args.baseline_tolerance,
+    )
 
     if args.output_json is not None:
         args.output_json.parent.mkdir(parents=True, exist_ok=True)
@@ -142,6 +180,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sigma", type=int, default=1500)
     parser.add_argument("--physical-neighbors", type=int, default=12)
     parser.add_argument("--stride", type=int, default=10)
+    parser.add_argument("--baseline-tolerance", type=float, default=0.0)
     parser.add_argument("--persistent-decoding", type=Path)
     parser.add_argument("--hodge-decoding", type=Path)
     parser.add_argument("--output-json", type=Path)

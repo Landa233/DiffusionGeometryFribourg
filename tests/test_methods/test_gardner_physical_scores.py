@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from TDA.gardner2022.compare_decodings import build_comparison_summary
 from TDA.gardner2022.physical_coordinate_scores import (
     physical_smoothness_score,
     score_decoded_coordinates,
@@ -63,3 +64,63 @@ def test_physical_smoothness_rejects_nonpositive_stride():
             n_neighbors=2,
             stride=0,
         )
+
+
+def test_comparison_summary_accepts_hodge_when_no_worse_than_persistent():
+    scores = {
+        "persistent": {"mean_physical_smoothness": 0.5},
+        "hodge": {"mean_physical_smoothness": 0.5},
+    }
+
+    summary = build_comparison_summary(
+        scores,
+        rat="R",
+        module="1",
+        session="OF",
+        day="day2",
+        physical_neighbors=12,
+        stride=10,
+    )
+
+    assert summary["hodge_at_least_persistent"] is True
+    assert summary["mean_physical_smoothness_delta_hodge_minus_persistent"] == 0.0
+
+
+def test_comparison_summary_rejects_hodge_when_smoother_baseline_wins():
+    scores = {
+        "persistent": {"mean_physical_smoothness": 0.4},
+        "hodge": {"mean_physical_smoothness": 0.6},
+    }
+
+    summary = build_comparison_summary(
+        scores,
+        rat="R",
+        module="1",
+        session="OF",
+        day="day2",
+        physical_neighbors=12,
+        stride=10,
+    )
+
+    assert summary["ranking"] == ["persistent", "hodge"]
+    assert summary["hodge_at_least_persistent"] is False
+
+
+def test_comparison_summary_can_apply_small_baseline_tolerance():
+    scores = {
+        "persistent": {"mean_physical_smoothness": 0.4},
+        "hodge": {"mean_physical_smoothness": 0.400001},
+    }
+
+    summary = build_comparison_summary(
+        scores,
+        rat="R",
+        module="1",
+        session="OF",
+        day="day2",
+        physical_neighbors=12,
+        stride=10,
+        baseline_tolerance=1e-5,
+    )
+
+    assert summary["hodge_at_least_persistent"] is True

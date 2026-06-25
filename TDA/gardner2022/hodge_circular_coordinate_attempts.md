@@ -46,3 +46,14 @@
 - Validation:
   - `PYTHONPYCACHEPREFIX=/tmp/dgf_pycache python3 -m py_compile TDA/gardner2022/physical_coordinate_scores.py TDA/gardner2022/score_decoding.py TDA/gardner2022/compare_decodings.py TDA/gardner2022/sweep_hodge_circular_coordinates.py TDA/gardner2022/run_hodge_circular_coordinates.py tests/test_methods/test_gardner_physical_scores.py tests/test_methods/test_circular_coordinates.py` passed.
   - `python3 -m pytest tests/test_methods/test_gardner_physical_scores.py tests/test_methods/test_circular_coordinates.py` could not run because `/usr/bin/python3` has no `numpy`; `conda` and `mamba` are not on `PATH`.
+
+## Checkpoint 5: Testable comparison decision
+
+- Refactored `compare_decodings.py` so the persistent-vs-Hodge decision is made by `build_comparison_summary`, a pure helper that does not require the raw Gardner data.
+- Added tests for the exact completion criterion:
+  - Hodge is accepted when its mean physical smoothness equals the persistent baseline.
+  - Hodge is rejected when the persistent baseline is lower.
+  - A small explicit `baseline_tolerance` can accept negligible numerical differences.
+- Validation:
+  - `PYTHONPYCACHEPREFIX=/tmp/dgf_pycache python3 -m py_compile TDA/gardner2022/compare_decodings.py TDA/gardner2022/physical_coordinate_scores.py TDA/gardner2022/score_decoding.py TDA/gardner2022/sweep_hodge_circular_coordinates.py TDA/gardner2022/run_hodge_circular_coordinates.py tests/test_methods/test_gardner_physical_scores.py tests/test_methods/test_circular_coordinates.py` passed.
+  - `python3 -m pytest tests/test_methods/test_gardner_physical_scores.py` could not run because `/usr/bin/python3` has no `numpy`.
