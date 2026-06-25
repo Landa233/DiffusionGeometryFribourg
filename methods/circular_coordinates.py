@@ -2,8 +2,7 @@
 
 This module implements the TDA pipeline prototyped in ``figures/tda.ipynb``:
 low-energy 1-forms are converted to advection-diffusion operators, their first
-complex eigenfunction gives an ``R^2`` coordinate plane, and candidates are
-ranked by how well ``x dy - y dx`` recovers the source 1-form.
+complex eigenfunction gives an ``R^2`` coordinate plane.
 """
 
 from __future__ import annotations
@@ -36,7 +35,7 @@ class CircularCoordinateCandidate:
 
 @dataclass(frozen=True)
 class CircularCoordinateResult:
-    """Selected circular coordinate and the ranked candidate list."""
+    """Selected circular coordinate and the candidate diagnostics."""
 
     coordinate_functions: tuple[Any, Any]
     coordinate_values: np.ndarray
@@ -148,10 +147,11 @@ def circular_coordinates(
     k:
         Number of Hodge 1-form eigenvectors to inspect.
     max_exact_ratio:
-        Candidate 1-forms with a larger exact Hodge component are deprioritised.
+        Candidate 1-forms with a larger exact Hodge component are skipped when
+        possible.
     min_coclosed_ratio:
         Candidate 1-forms with a smaller coexact-plus-harmonic component are
-        deprioritised.
+        skipped when possible.
     imag_tol:
         Minimum imaginary part used to identify circular eigenfunctions.
     norm_floor:
@@ -160,8 +160,10 @@ def circular_coordinates(
     Returns
     -------
     CircularCoordinateResult
-        The selected coordinate as two diffusion-basis functions, pointwise
-        ``(x, y)`` values, angles, the selected 1-form, and candidate diagnostics.
+        The first Hodge-filtered circular coordinate as two diffusion-basis
+        functions, pointwise ``(x, y)`` values, angles, the selected 1-form, and
+        candidate diagnostics. The ``x dy - y dx`` reconstruction score is only
+        diagnostic; it is not used to choose the coordinate.
     """
 
     if k <= 0:
@@ -230,11 +232,7 @@ def circular_coordinates(
         )
 
     filtered = [candidate for candidate in candidates if candidate.passed_hodge_filter]
-    pool = filtered if filtered else candidates
-    best = min(pool, key=lambda candidate: candidate.reconstruction_error)
-    ranked = tuple(
-        sorted(candidates, key=lambda candidate: candidate.reconstruction_error)
-    )
+    best = filtered[0] if filtered else candidates[0]
 
     return CircularCoordinateResult(
         coordinate_functions=best.coordinate_functions,
@@ -242,7 +240,7 @@ def circular_coordinates(
         angle=best.angle,
         form=best.form,
         candidate=best,
-        candidates=ranked,
+        candidates=tuple(candidates),
     )
 
 

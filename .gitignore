@@ -19,3 +19,7 @@ dist/
 
 # Installers
 Miniconda3-latest-MacOSX-arm64.sh
+
+# Large datasets
+TDA/data/Toroidal_topology_grid_cell_data/
+TDA/data/Toroidal_topology_grid_cell_data.zip
