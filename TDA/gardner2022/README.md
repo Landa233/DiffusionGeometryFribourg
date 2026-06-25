@@ -40,3 +40,28 @@ python TDA/gardner2022/score_decoding.py --method persistent \
 python TDA/gardner2022/score_decoding.py --method hodge \
   --rat R --module 1 --session OF --day day2
 ```
+
+Lower `mean_physical_smoothness` is better. To run a compact Hodge sweep and
+stop once a Hodge attempt matches or beats the saved persistent baseline, run:
+
+```bash
+python TDA/gardner2022/sweep_hodge_circular_coordinates.py \
+  --rat R --module 1 --session OF --day day2 --stop-on-match
+```
+
+To compare the two saved decodings directly and report whether Hodge matches
+or beats the persistent baseline:
+
+```bash
+python TDA/gardner2022/compare_decodings.py \
+  --rat R --module 1 --session OF --day day2 \
+  --output-json TDA/gardner2022/output/R_1_OF_day2_decoding_comparison.json
+```
+
+For an automated Hodge parameter search that scores each attempt against the
+persistent baseline and stops at the first match:
+
+```bash
+python TDA/gardner2022/sweep_hodge_circular_coordinates.py \
+  --run-persistent-baseline --stop-on-match --no-verify-archive
+```
