@@ -63,6 +63,34 @@ def test_from_knn_graph_regularisation_modes_construct(regularisation_method):
     _assert_valid_geometry(dg, data.shape)
 
 
+def test_markov_chain_uses_fixed_bandwidth():
+    _, nbr_distances, nbr_indices, _, _ = _build_knn_inputs()
+    bandwidth = 2.5
+
+    kernel, bandwidths = markov_chain(
+        nbr_distances=nbr_distances,
+        nbr_indices=nbr_indices,
+        bandwidth=bandwidth,
+    )
+
+    expected = np.exp(-((nbr_distances / bandwidth) ** 2))
+    expected /= expected.sum(axis=1, keepdims=True)
+    assert np.allclose(kernel, expected)
+    assert np.allclose(bandwidths, bandwidth**2 / 4.0)
+
+
+def test_from_point_cloud_accepts_fixed_bandwidth():
+    data, _, _, _, _ = _build_knn_inputs()
+    dg = DiffusionGeometry.from_point_cloud(
+        data_matrix=data,
+        bandwidth=2.5,
+        knn_kernel=24,
+        n_function_basis=20,
+    )
+
+    _assert_valid_geometry(dg, data.shape)
+
+
 @pytest.mark.parametrize("regularisation_method", ["diffusion", "bandlimit", "none"])
 def test_from_knn_kernel_regularisation_modes_construct(regularisation_method):
     data, _, nbr_indices, kernel, bandwidths = _build_knn_inputs()

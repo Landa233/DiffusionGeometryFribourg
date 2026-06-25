@@ -292,6 +292,7 @@ def run(args):
             n_coefficients=args.n_coefficients,
             knn_kernel=args.knn_kernel,
             knn_bandwidth=args.knn_bandwidth,
+            bandwidth=args.bandwidth,
             function_basis=function_basis,
         )
         result = circular_coordinates(dg, epsilon=args.epsilon, k=args.k)
@@ -320,6 +321,7 @@ def parse_args():
     parser.add_argument("--n-coefficients", type=int, default=40)
     parser.add_argument("--knn-kernel", type=int, default=80)
     parser.add_argument("--knn-bandwidth", type=int, default=24)
+    parser.add_argument("--bandwidth", type=float)
     parser.add_argument(
         "--function-basis",
         choices=["monomial", "diffusion"],

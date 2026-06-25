@@ -61,6 +61,7 @@ def _compute_cut_coordinates(
         n_coefficients=args.n_coefficients,
         knn_kernel=args.knn_kernel,
         knn_bandwidth=args.knn_bandwidth,
+        bandwidth=args.bandwidth,
         function_basis=function_basis,
         regularisation_method=args.regularisation_method,
         rcond=args.rcond,
@@ -74,6 +75,7 @@ def _compute_cut_coordinates(
         data,
         knn_kernel=args.knn_kernel,
         knn_bandwidth=args.knn_bandwidth,
+        bandwidth=args.bandwidth,
     )
     cut_kernel, cut_diagnostics = cut_kernel_by_angle(
         nbr_indices,
@@ -227,6 +229,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--n-coefficients", type=int, default=20)
     parser.add_argument("--knn-kernel", type=int, default=60)
     parser.add_argument("--knn-bandwidth", type=int, default=18)
+    parser.add_argument("--bandwidth", type=float)
     parser.add_argument("--regularisation-method", default="diffusion")
     parser.add_argument("--rcond", type=float, default=1e-5)
     parser.add_argument("--epsilon", type=float, default=1.0)

@@ -3,6 +3,8 @@ import numpy as np
 from diffusion_geometry.core import (
     carre_du_champ_knn,
     carre_du_champ_graph,
+    knn_graph,
+    markov_chain,
 )
 
 
@@ -94,6 +96,44 @@ def test_cdc_equivalence(use_mean_centres, use_bandwidths, shapes):
 
     # Check values
     np.testing.assert_allclose(cdc_knn, cdc_graph, rtol=1e-5, atol=1e-6)
+
+
+def test_cdc_converges_on_grid_with_fixed_bandwidth():
+    errors = []
+    for m in (16, 24, 36):
+        axis = np.linspace(-2.0, 2.0, m)
+        x_grid, y_grid = np.meshgrid(axis, axis, indexing="ij")
+        data = np.column_stack((x_grid.ravel(), y_grid.ravel()))
+        x = data[:, 0]
+        y = data[:, 1]
+
+        h = axis[1] - axis[0]
+        bandwidth = h**0.7
+        knn_kernel = min(data.shape[0], int(np.ceil(18 * m)))
+        nbr_distances, nbr_indices = knn_graph(data, knn_kernel=knn_kernel)
+        kernel, bandwidths = markov_chain(
+            nbr_distances,
+            nbr_indices,
+            bandwidth=bandwidth,
+        )
+
+        f = np.sin(x) + 0.5 * y**2
+        g = x * y + 0.25 * x**2
+        expected = np.cos(x) * (y + 0.5 * x) + x * y
+        gamma = carre_du_champ_knn(
+            f[:, None],
+            g[:, None],
+            kernel,
+            nbr_indices,
+            bandwidths=bandwidths,
+        ).reshape(-1)
+
+        interior = (np.abs(x) < 0.5) & (np.abs(y) < 0.5)
+        errors.append(np.sqrt(np.mean((gamma[interior] - expected[interior]) ** 2)))
+
+    assert errors[1] < errors[0]
+    assert errors[2] < errors[1]
+    assert errors[-1] < 0.006
 
 
 if __name__ == "__main__":

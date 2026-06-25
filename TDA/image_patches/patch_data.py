@@ -129,6 +129,7 @@ def build_knn_diffusion_kernel(
     *,
     knn_kernel: int = 32,
     knn_bandwidth: int = 8,
+    bandwidth: Optional[float] = None,
     c: float = 0.0,
     bandwidth_variability: float = -0.5,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -141,6 +142,7 @@ def build_knn_diffusion_kernel(
         c=c,
         bandwidth_variability=bandwidth_variability,
         knn_bandwidth=knn_bandwidth,
+        bandwidth=bandwidth,
     )
     return nbr_indices, kernel, bandwidths
 

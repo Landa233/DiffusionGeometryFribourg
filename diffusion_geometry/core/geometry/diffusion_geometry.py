@@ -236,6 +236,8 @@ class DiffusionGeometry:
             - c (float, default=0.0): Parameter for Markov chain construction.
             - bandwidth_variability (float, default=-0.5): Parameter for bandwidth variability.
             - knn_bandwidth (int, default=8): Number of neighbours for bandwidth estimation.
+            - bandwidth (float, optional): Fixed Gaussian length scale. If set,
+              skips automatic bandwidth selection.
             - rcond (float, default=1e-5): Cutoff for spectral operations.
             - measure (np.ndarray, optional): Stationary measure.
             - function_basis (np.ndarray, optional): Precomputed basis of coefficient functions.
@@ -247,6 +249,7 @@ class DiffusionGeometry:
             c=kwargs.get("c", 0.0),
             bandwidth_variability=kwargs.get("bandwidth_variability", -0.5),
             knn_bandwidth=kwargs.get("knn_bandwidth", 8),
+            bandwidth=kwargs.get("bandwidth"),
         )
         immersion_coords = kwargs.pop("immersion_coords", None)
 
@@ -280,6 +283,8 @@ class DiffusionGeometry:
             - c (float, default=0.0): Parameter for Markov chain construction.
             - bandwidth_variability (float, default=-0.5): Parameter for bandwidth variability.
             - knn_bandwidth (int, default=8): Number of neighbours for bandwidth estimation.
+            - bandwidth (float, optional): Fixed Gaussian length scale. If set,
+              skips automatic bandwidth selection.
             - regularisation_method (str, default='diffusion'): Regularisation method.
             - rcond (float, default=1e-5): Cutoff for spectral operations.
             - measure (np.ndarray, optional): Stationary measure.

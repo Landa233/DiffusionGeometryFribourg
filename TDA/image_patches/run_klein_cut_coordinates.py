@@ -179,6 +179,7 @@ def run(args: argparse.Namespace) -> None:
         "n_coefficients": args.n_coefficients,
         "knn_kernel": args.knn_kernel,
         "knn_bandwidth": args.knn_bandwidth,
+        "bandwidth": args.bandwidth,
         "regularisation_method": args.regularisation_method,
         "rcond": args.rcond,
     }
@@ -210,6 +211,7 @@ def run(args: argparse.Namespace) -> None:
         landmarks,
         knn_kernel=args.knn_kernel,
         knn_bandwidth=args.knn_bandwidth,
+        bandwidth=args.bandwidth,
     )
     if args.no_cut:
         cut_kernel = kernel
@@ -304,6 +306,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--monomial-degree", type=int, default=1)
     parser.add_argument("--knn-kernel", type=int, default=80)
     parser.add_argument("--knn-bandwidth", type=int, default=24)
+    parser.add_argument("--bandwidth", type=float)
     parser.add_argument("--regularisation-method", default="diffusion")
     parser.add_argument("--rcond", type=float, default=1e-5)
     parser.add_argument("--epsilon", type=float, default=1.0)

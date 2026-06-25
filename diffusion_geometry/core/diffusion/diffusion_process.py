@@ -106,7 +106,12 @@ def tune_kernel(kernel_entries: np.ndarray, epsilons: np.ndarray):
 
 
 def markov_chain(
-    nbr_distances, nbr_indices, c=0, bandwidth_variability=-0.5, knn_bandwidth=8
+    nbr_distances,
+    nbr_indices,
+    c=0,
+    bandwidth_variability=-0.5,
+    knn_bandwidth=8,
+    bandwidth=None,
 ):
     """
     Computes the diffusion kernel using a specific Markov chain construction.
@@ -127,6 +132,9 @@ def markov_chain(
         0 for fixed (standard Gaussian), -0.5 for variable (Diffusion Maps).
     knn_bandwidth : int
         Number of NNs for bandwidth estimation.
+    bandwidth : float, optional
+        Fixed Gaussian length scale. If provided, skip automatic bandwidth
+        selection and use ``exp(-(dist / bandwidth)^2)``.
 
     Returns
     -------
@@ -140,6 +148,15 @@ def markov_chain(
 
     n, knn_kernel = nbr_distances.shape
     assert nbr_indices.shape == (n, knn_kernel)
+
+    if bandwidth is not None:
+        bandwidth = float(bandwidth)
+        if bandwidth <= 0:
+            raise ValueError("bandwidth must be positive.")
+        kernel = np.exp(-((nbr_distances / bandwidth) ** 2))
+        row_sums = kernel.sum(axis=1)
+        diffusion_kernel = kernel / row_sums[:, None]
+        return diffusion_kernel, np.full(n, bandwidth**2 / 4.0)
 
     # 1. Compute the kernel bandwidths rho via kernel density estimation.
 
