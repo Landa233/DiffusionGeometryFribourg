@@ -29,3 +29,14 @@ python TDA/gardner2022/run_hodge_circular_coordinates.py \
 ```
 
 Outputs are written to `TDA/gardner2022/output/`.
+
+To compare decoded coordinates from the persistent-homology and Hodge runners
+with the same physical-location criterion, run:
+
+```bash
+python TDA/gardner2022/score_decoding.py --method persistent \
+  --rat R --module 1 --session OF --day day2
+
+python TDA/gardner2022/score_decoding.py --method hodge \
+  --rat R --module 1 --session OF --day day2
+```

@@ -10,8 +10,8 @@
   - Added Gardner CLI knobs for fixed bandwidth, embedding-coordinate truncation/standardization, monomial function bases, physical candidate selection, and physical scoring stride.
   - Added decoded physical smoothness scoring: nearest-neighbour wrapped angle variation over `(xx, yy)`, normalized by circular variance.
 - Validation:
-  - `conda run --no-capture-output -n basic-env pytest tests/test_methods/test_circular_coordinates.py` passed.
-  - `python -m py_compile methods/circular_coordinates.py TDA/gardner2022/run_hodge_circular_coordinates.py tests/test_methods/test_circular_coordinates.py` passed.
+  - `PYTHONPYCACHEPREFIX=/tmp/dgf_pycache python3 -m py_compile methods/circular_coordinates.py TDA/gardner2022/run_hodge_circular_coordinates.py tests/test_methods/test_circular_coordinates.py` passed.
+  - Could not run dependency tests in this shell: `conda` is not on `PATH`, and `/usr/bin/python3` has no `numpy`.
 - Blocked measurement:
   - The extracted Gardner data directory is not present at `TDA/gardner2022/data/Toroidal_topology_grid_cell_data`, so the full rat-location score could not be run yet.
 
@@ -24,3 +24,9 @@
   - selection criteria,
   - diffusion versus monomial function bases.
 - Each sweep delegates to `run_hodge_circular_coordinates.py`, so successful attempts append comparable physical smoothness measurements to this file.
+
+## Checkpoint 3: Baseline comparison scorer
+
+- Added `TDA/gardner2022/score_decoding.py` so saved persistent-homology and Hodge `*_decoding.npz` files can be evaluated by the same open-field physical smoothness score.
+- Added README commands for scoring both methods.
+- This is the comparison gate for the goal: once the Gardner data and decoding NPZ files are present, use the scorer's `mean_physical_smoothness` to decide whether a Hodge attempt matches or beats the persistent baseline.

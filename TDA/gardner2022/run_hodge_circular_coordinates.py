@@ -14,7 +14,6 @@ python TDA/gardner2022/run_hodge_circular_coordinates.py --rat R --module 1 --se
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 import os
 from pathlib import Path
 import sys
@@ -26,6 +25,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from diffusion_geometry import DiffusionGeometry
+from TDA.gardner2022.physical_coordinate_scores import score_decoded_coordinates
 from TDA.synthetic.run_circular_coordinates import monomial_function_basis
 from methods.circular_coordinates import circular_coordinates
 from TDA.gardner2022.run_persistent_homology import (
@@ -41,15 +41,6 @@ from TDA.gardner2022.run_persistent_homology import (
     require_archive_checksum,
     working_directory,
 )
-
-
-@dataclass(frozen=True)
-class CandidatePhysicalScore:
-    candidate_index: int
-    physical_smoothness: float
-    circular_variance: float
-    local_energy: float
-    decoded_angle: np.ndarray
 
 
 def preprocess_landmarks(
@@ -109,49 +100,6 @@ def two_best_candidates(result, max_pair_search: int, *, criterion: str = "intri
     return best_pair
 
 
-def circular_variance(angle: np.ndarray) -> float:
-    return float(1.0 - abs(np.mean(np.exp(1j * angle))))
-
-
-def wrapped_angle_difference(first: np.ndarray, second: np.ndarray) -> np.ndarray:
-    return np.angle(np.exp(1j * (first - second)))
-
-
-def physical_smoothness_score(
-    physical_xy: np.ndarray,
-    angle: np.ndarray,
-    *,
-    n_neighbors: int,
-    stride: int,
-) -> tuple[float, float, float]:
-    if stride <= 0:
-        raise ValueError("physical_score_stride must be positive.")
-    if physical_xy.shape[0] != angle.shape[0]:
-        raise ValueError("physical coordinates and angles must have the same length.")
-    physical_xy = physical_xy[::stride]
-    angle = angle[::stride]
-    finite = np.isfinite(physical_xy).all(axis=1) & np.isfinite(angle)
-    physical_xy = physical_xy[finite]
-    angle = angle[finite]
-    if physical_xy.shape[0] <= n_neighbors:
-        raise ValueError("Need more decoded samples than physical neighbours.")
-
-    from sklearn.neighbors import NearestNeighbors
-
-    nbrs = NearestNeighbors(n_neighbors=n_neighbors + 1).fit(physical_xy)
-    distances, indices = nbrs.kneighbors(physical_xy)
-    distances = distances[:, 1:]
-    indices = indices[:, 1:]
-    diffs = wrapped_angle_difference(angle[:, None], angle[indices])
-    scale = np.median(distances[distances > 0])
-    if not np.isfinite(scale) or scale <= 0:
-        scale = 1.0
-    weights = np.exp(-((distances / scale) ** 2))
-    local_energy = float(np.sum(weights * diffs**2) / np.sum(weights))
-    variance = circular_variance(angle)
-    return float(local_energy / max(variance, 1e-3)), variance, local_energy
-
-
 def score_decoded_candidates(
     coordsbox: np.ndarray,
     xx: np.ndarray,
@@ -160,33 +108,21 @@ def score_decoded_candidates(
     *,
     physical_neighbors: int,
     physical_score_stride: int,
-) -> list[CandidatePhysicalScore]:
-    physical_xy = np.column_stack((xx[times_box], yy[times_box]))
-    scores = []
-    for candidate_index in range(coordsbox.shape[1]):
-        decoded_angle = coordsbox[:, candidate_index]
-        smoothness, variance, local_energy = physical_smoothness_score(
-            physical_xy,
-            decoded_angle,
-            n_neighbors=physical_neighbors,
-            stride=physical_score_stride,
-        )
-        scores.append(
-            CandidatePhysicalScore(
-                candidate_index=candidate_index,
-                physical_smoothness=smoothness,
-                circular_variance=variance,
-                local_energy=local_energy,
-                decoded_angle=decoded_angle,
-            )
-        )
-    return scores
+) -> list:
+    return score_decoded_coordinates(
+        coordsbox,
+        xx,
+        yy,
+        times_box,
+        physical_neighbors=physical_neighbors,
+        stride=physical_score_stride,
+    )
 
 
-def two_best_physical_candidates(result, scores: list[CandidatePhysicalScore]):
+def two_best_physical_candidates(result, scores: list):
     if len(scores) < 2:
         raise RuntimeError("Need at least two scored circular-coordinate candidates.")
-    score_by_candidate = {score.candidate_index: score for score in scores}
+    score_by_candidate = {score.coordinate_index: score for score in scores}
     best_pair = None
     best_positions = None
     best_score = np.inf
@@ -248,7 +184,7 @@ def save_hodge_output(
     angles,
     *,
     selection_method: str,
-    physical_scores: list[CandidatePhysicalScore] | None = None,
+    physical_scores: list | None = None,
     selected_physical_score: float | None = None,
 ):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -282,7 +218,7 @@ def save_hodge_output(
             [candidate.dirichlet_energy for candidate in result.candidates]
         ),
         physical_candidate_positions=np.array(
-            [] if physical_scores is None else [score.candidate_index for score in physical_scores]
+            [] if physical_scores is None else [score.coordinate_index for score in physical_scores]
         ),
         physical_smoothness_scores=np.array(
             [] if physical_scores is None else [score.physical_smoothness for score in physical_scores]
@@ -560,7 +496,7 @@ def run(args: argparse.Namespace) -> None:
             for candidate in candidates
         )
         physical_text = ", ".join(
-            f"coord{score.candidate_index}: smooth={score.physical_smoothness:.4g}, "
+            f"coord{score.coordinate_index}: smooth={score.physical_smoothness:.4g}, "
             f"circ_var={score.circular_variance:.4g}"
             for score in selected_physical_scores
         )
@@ -568,7 +504,7 @@ def run(args: argparse.Namespace) -> None:
         if physical_scores:
             top_scores = sorted(physical_scores, key=lambda item: item.physical_smoothness)[:5]
             pool_text = "\n  - best pool physical scores: " + ", ".join(
-                f"{item.candidate_index}:{item.physical_smoothness:.4g}"
+                f"{item.coordinate_index}:{item.physical_smoothness:.4g}"
                 for item in top_scores
             )
         append_attempt_log(
