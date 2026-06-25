@@ -28,5 +28,10 @@
 ## Checkpoint 3: Baseline comparison scorer
 
 - Added `TDA/gardner2022/score_decoding.py` so saved persistent-homology and Hodge `*_decoding.npz` files can be evaluated by the same open-field physical smoothness score.
+- Added `TDA/gardner2022/physical_coordinate_scores.py` so the Hodge runner and standalone scorer share exactly the same metric implementation.
 - Added README commands for scoring both methods.
 - This is the comparison gate for the goal: once the Gardner data and decoding NPZ files are present, use the scorer's `mean_physical_smoothness` to decide whether a Hodge attempt matches or beats the persistent baseline.
+- Validation:
+  - `python -m py_compile TDA/gardner2022/physical_coordinate_scores.py TDA/gardner2022/score_decoding.py TDA/gardner2022/run_hodge_circular_coordinates.py tests/test_methods/test_gardner_physical_scores.py` passed.
+  - `conda run --no-capture-output -n basic-env pytest tests/test_methods/test_gardner_physical_scores.py tests/test_methods/test_circular_coordinates.py` passed.
+  - `conda run --no-capture-output -n basic-env python TDA/gardner2022/score_decoding.py --help` passed.
