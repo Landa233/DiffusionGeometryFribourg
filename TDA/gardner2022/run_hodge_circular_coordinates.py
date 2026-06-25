@@ -8,7 +8,7 @@ notebook, and the physical location is coloured by the two learned angles.
 
 Example
 -------
-python TDA/gardner2022_hodge_circular_coordinates.py --rat R --module 1 --session OF --day day2
+python TDA/gardner2022/run_hodge_circular_coordinates.py --rat R --module 1 --session OF --day day2
 """
 
 from __future__ import annotations
@@ -20,13 +20,13 @@ import sys
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from diffusion_geometry import DiffusionGeometry
 from methods.circular_coordinates import circular_coordinates
-from TDA.gardner2022_persistent_homology import (
+from TDA.gardner2022.run_persistent_homology import (
     DEFAULT_ARCHIVE,
     DEFAULT_DATA_DIR,
     DEFAULT_ORIGINAL_DIR,
@@ -132,7 +132,7 @@ def save_hodge_output(path: Path, result, candidates, landmarks, indstemp, movet
 
 def run(args: argparse.Namespace) -> None:
     data_dir = args.data_dir.resolve()
-    output_dir = (args.output_dir or data_dir / "Results").resolve()
+    output_dir = args.output_dir.resolve()
     figure_dir = args.figure_dir.resolve()
     original_dir = args.original_dir.resolve()
 
@@ -141,7 +141,9 @@ def run(args: argparse.Namespace) -> None:
     if not data_dir.exists():
         raise FileNotFoundError(f"Extracted data directory not found: {data_dir}")
 
-    os.environ.setdefault("MPLCONFIGDIR", str(ROOT / "TDA" / "output" / ".matplotlib"))
+    os.environ.setdefault(
+        "MPLCONFIGDIR", str(ROOT / "TDA" / "gardner2022" / "output" / ".matplotlib")
+    )
     utils = load_original_utils(original_dir)
     stem = dataset_stem(args.rat, args.module, args.session, args.day)
 
@@ -297,9 +299,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--session", default="OF")
     parser.add_argument("--day", default="day2")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
-    parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "TDA" / "gardner2022" / "output")
     parser.add_argument(
-        "--figure-dir", type=Path, default=ROOT / "TDA" / "output" / "gardner2022"
+        "--figure-dir", type=Path, default=ROOT / "TDA" / "gardner2022" / "output"
     )
     parser.add_argument("--original-dir", type=Path, default=DEFAULT_ORIGINAL_DIR)
     parser.add_argument("--archive", type=Path, default=DEFAULT_ARCHIVE)

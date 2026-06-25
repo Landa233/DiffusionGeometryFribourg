@@ -2,7 +2,7 @@
 
 Examples
 --------
-python TDA/synthetic_circular_coordinates.py --n 400 --ambient-dim 8
+python TDA/synthetic/run_circular_coordinates.py --n 400 --ambient-dim 8
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import sys
 import numpy as np
 from opt_einsum import contract
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -73,6 +73,25 @@ def cylinder(n: int, ambient_dim: int, rng: np.random.Generator):
     radius = 1.0
     data = np.column_stack((radius * np.cos(theta), radius * np.sin(theta), height))
     return _embed_high_dim(data, ambient_dim, rng), {"circle": theta}
+
+
+def klein_bottle(n: int, ambient_dim: int, rng: np.random.Generator):
+    """Sample a standard self-intersection-free Klein bottle embedding in R4."""
+
+    if ambient_dim < 4:
+        raise ValueError("ambient_dim must be at least 4 for the Klein bottle.")
+    u = rng.uniform(0.0, 2.0 * np.pi, size=n)
+    v = rng.uniform(0.0, 2.0 * np.pi, size=n)
+    radius = 2.0
+    data = np.column_stack(
+        (
+            (radius + np.cos(v)) * np.cos(u),
+            (radius + np.cos(v)) * np.sin(u),
+            np.sin(v) * np.cos(0.5 * u),
+            np.sin(v) * np.sin(0.5 * u),
+        )
+    )
+    return _embed_high_dim(data, ambient_dim, rng), {"base": u, "fibre": v}
 
 
 def _angle_alignment_score(recovered: np.ndarray, truth: np.ndarray) -> float:
@@ -310,7 +329,7 @@ def parse_args():
     parser.add_argument("--epsilon", type=float, default=1.0)
     parser.add_argument("--k", type=int, default=50)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--output-dir", type=Path, default=Path("TDA/output"))
+    parser.add_argument("--output-dir", type=Path, default=Path("TDA/synthetic/output"))
     return parser.parse_args()
 
 

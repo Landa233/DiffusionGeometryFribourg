@@ -1,7 +1,7 @@
 import numpy as np
 
 from diffusion_geometry import DiffusionGeometry
-from TDA.synthetic_circular_coordinates import monomial_function_basis
+from TDA.synthetic.run_circular_coordinates import monomial_function_basis
 from methods.circular_coordinates import circular_coordinates
 
 

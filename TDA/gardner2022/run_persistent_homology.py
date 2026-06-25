@@ -2,12 +2,12 @@
 
 This script is a small CLI wrapper around the original GridCellTorus notebook
 pipeline. It keeps the upstream notebooks and helper functions unchanged under
-``TDA/gardner2022_original`` while making the single-dataset analysis runnable
+``TDA/gardner2022/original`` while making the single-dataset analysis runnable
 from the repository.
 
 Example
 -------
-python TDA/gardner2022_persistent_homology.py --rat R --module 1 --session OF --day day2
+python TDA/gardner2022/run_persistent_homology.py --rat R --module 1 --session OF --day day2
 """
 
 from __future__ import annotations
@@ -22,10 +22,11 @@ import sys
 import warnings
 
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATA_DIR = ROOT / "TDA" / "data" / "Toroidal_topology_grid_cell_data"
-DEFAULT_ARCHIVE = ROOT / "TDA" / "data" / "Toroidal_topology_grid_cell_data.zip"
-DEFAULT_ORIGINAL_DIR = ROOT / "TDA" / "gardner2022_original"
+ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DATA_DIR = ROOT / "TDA" / "gardner2022" / "data" / "Toroidal_topology_grid_cell_data"
+DEFAULT_ARCHIVE = ROOT / "TDA" / "gardner2022" / "data" / "Toroidal_topology_grid_cell_data.zip"
+DEFAULT_ORIGINAL_DIR = ROOT / "TDA" / "gardner2022" / "original"
+DEFAULT_OUTPUT_DIR = ROOT / "TDA" / "gardner2022" / "output"
 EXPECTED_MD5 = "379bfdca61cd54d5f58cab9d3ba477de"
 
 
@@ -63,7 +64,7 @@ def require_archive_checksum(archive: Path) -> None:
 def load_original_utils(original_dir: Path):
     os.environ.setdefault("MPLBACKEND", "Agg")
     os.environ.setdefault(
-        "MPLCONFIGDIR", str(ROOT / "TDA" / "output" / ".matplotlib")
+        "MPLCONFIGDIR", str(ROOT / "TDA" / "gardner2022" / "output" / ".matplotlib")
     )
     try:
         import numpy as np
@@ -368,7 +369,7 @@ def plot_physical_coordinates(utils, xx, yy, times_box, coordsbox, figure_path: 
 
 def run(args: argparse.Namespace) -> None:
     data_dir = args.data_dir.resolve()
-    output_dir = (args.output_dir or data_dir / "Results").resolve()
+    output_dir = args.output_dir.resolve()
     figure_dir = args.figure_dir.resolve()
     original_dir = args.original_dir.resolve()
 
@@ -528,8 +529,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--session", default="OF")
     parser.add_argument("--day", default="day2")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
-    parser.add_argument("--output-dir", type=Path, default=None)
-    parser.add_argument("--figure-dir", type=Path, default=ROOT / "TDA" / "output" / "gardner2022")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--figure-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--original-dir", type=Path, default=DEFAULT_ORIGINAL_DIR)
     parser.add_argument("--archive", type=Path, default=DEFAULT_ARCHIVE)
     parser.add_argument("--no-verify-archive", dest="verify_archive", action="store_false")
