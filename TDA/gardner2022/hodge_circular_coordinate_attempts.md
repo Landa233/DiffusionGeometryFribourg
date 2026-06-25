@@ -14,3 +14,13 @@
   - `python -m py_compile methods/circular_coordinates.py TDA/gardner2022/run_hodge_circular_coordinates.py tests/test_methods/test_circular_coordinates.py` passed.
 - Blocked measurement:
   - The extracted Gardner data directory is not present at `TDA/gardner2022/data/Toroidal_topology_grid_cell_data`, so the full rat-location score could not be run yet.
+
+## Checkpoint 2: Repeatable parameter sweep
+
+- Added `sweep_hodge_circular_coordinates.py` to run a compact grid over:
+  - Hodge up-term weights,
+  - constant bandwidths,
+  - truncated/standardized embedding coordinates,
+  - selection criteria,
+  - diffusion versus monomial function bases.
+- Each sweep delegates to `run_hodge_circular_coordinates.py`, so successful attempts append comparable physical smoothness measurements to this file.
