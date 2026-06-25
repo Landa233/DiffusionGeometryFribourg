@@ -31,6 +31,7 @@ class CircularCoordinateCandidate:
     fit_scale: float
     reconstruction_error: float
     similarity: float
+    dirichlet_energy: float
 
 
 @dataclass(frozen=True)
@@ -126,6 +127,10 @@ def _score_coordinate_form(alpha, rotation_form, norm_floor: float):
     return fit_scale, reconstruction_error, similarity
 
 
+def _coordinate_dirichlet_energy(x, y) -> float:
+    return float(np.real_if_close(_safe_norm(x.d()) ** 2 + _safe_norm(y.d()) ** 2))
+
+
 def circular_coordinates(
     dg,
     *,
@@ -133,6 +138,7 @@ def circular_coordinates(
     k: int = 20,
     max_exact_ratio: float = 0.8,
     min_coclosed_ratio: float = 0.5,
+    hodge_up_weight: float = 1.0,
     imag_tol: float = 1e-8,
     norm_floor: float = 1e-10,
 ) -> CircularCoordinateResult:
@@ -152,6 +158,10 @@ def circular_coordinates(
     min_coclosed_ratio:
         Candidate 1-forms with a smaller coexact-plus-harmonic component are
         skipped when possible.
+    hodge_up_weight:
+        Weight on the up-Laplacian term used to find candidate 1-forms. Values
+        below one bias the search toward coclosed forms, which can help noisy
+        circular-coordinate examples.
     imag_tol:
         Minimum imaginary part used to identify circular eigenfunctions.
     norm_floor:
@@ -170,8 +180,11 @@ def circular_coordinates(
         raise ValueError("k must be positive.")
     if epsilon < 0:
         raise ValueError("epsilon must be non-negative.")
+    if hodge_up_weight < 0:
+        raise ValueError("hodge_up_weight must be non-negative.")
 
-    hodge_evals, hodge_forms = dg.laplacian(1).spectrum()
+    hodge_operator = dg.down_laplacian(1) + hodge_up_weight * dg.up_laplacian(1)
+    hodge_evals, hodge_forms = hodge_operator.spectrum()
     candidates: list[CircularCoordinateCandidate] = []
 
     for index in range(min(k, len(hodge_evals))):
@@ -203,6 +216,7 @@ def circular_coordinates(
         fit_scale, reconstruction_error, similarity = _score_coordinate_form(
             alpha, rotation_form, norm_floor
         )
+        dirichlet_energy = _coordinate_dirichlet_energy(x, y)
 
         angle = np.mod(
             np.arctan2(coordinate_values[:, 1], coordinate_values[:, 0]), 2 * np.pi
@@ -223,6 +237,7 @@ def circular_coordinates(
                 fit_scale=fit_scale,
                 reconstruction_error=reconstruction_error,
                 similarity=similarity,
+                dirichlet_energy=dirichlet_energy,
             )
         )
 
