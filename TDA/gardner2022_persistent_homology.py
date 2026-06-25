@@ -62,6 +62,9 @@ def require_archive_checksum(archive: Path) -> None:
 
 def load_original_utils(original_dir: Path):
     os.environ.setdefault("MPLBACKEND", "Agg")
+    os.environ.setdefault(
+        "MPLCONFIGDIR", str(ROOT / "TDA" / "output" / ".matplotlib")
+    )
     try:
         import numpy as np
     except ImportError as exc:
@@ -97,6 +100,41 @@ def load_original_utils(original_dir: Path):
         except ValueError:
             pass
     return module
+
+
+def get_coords_compat(utils, cocycle, threshold, num_sampled, dists, coeff):
+    """NumPy-2-compatible copy of Gardner's original ``get_coords`` helper."""
+
+    np = utils.np
+    lsmr = utils.lsmr
+
+    zint = np.where(coeff - cocycle[:, 2] < cocycle[:, 2])
+    cocycle[zint, 2] = cocycle[zint, 2] - coeff
+    d = np.zeros((num_sampled, num_sampled))
+    d[np.tril_indices(num_sampled)] = np.NaN
+    d[cocycle[:, 1], cocycle[:, 0]] = cocycle[:, 2]
+    d[dists > threshold] = np.NaN
+    d[dists == 0] = np.NaN
+    edges = np.where(~np.isnan(d))
+    verts = np.array(np.unique(edges))
+    num_edges = np.shape(edges)[1]
+    num_verts = np.size(verts)
+    values = d[edges]
+    a_matrix = np.zeros((num_edges, num_verts), dtype=int)
+    v1 = np.zeros((num_edges, 2), dtype=int)
+    v2 = np.zeros((num_edges, 2), dtype=int)
+    for i in range(num_edges):
+        v1[i, :] = [i, int(np.where(verts == edges[0][i])[0][0])]
+        v2[i, :] = [i, int(np.where(verts == edges[1][i])[0][0])]
+
+    a_matrix[v1[:, 0], v1[:, 1]] = -1
+    a_matrix[v2[:, 0], v2[:, 1]] = 1
+
+    weights = np.ones((num_edges,))
+    aw = a_matrix * np.sqrt(weights[:, np.newaxis])
+    bw = values * np.sqrt(weights)
+    coord = lsmr(aw, bw)[0] % 1
+    return coord, verts
 
 
 def dataset_stem(rat: str, module: str, session: str, day: str) -> str:
@@ -260,7 +298,8 @@ def decode_circular_coordinates(
     threshold = births1[i_max[-2]] + (deaths1[i_max[-2]] - births1[i_max[-2]]) * dec_thresh
     for out_index, class_index in enumerate(ph_classes):
         cocycle = cocycles[i_max[-(class_index + 1)]]
-        coords1[out_index, :], _ = utils.get_coords(
+        coords1[out_index, :], _ = get_coords_compat(
+            utils,
             cocycle.copy(), threshold, len(indstemp), dists_land, coeff
         )
 
