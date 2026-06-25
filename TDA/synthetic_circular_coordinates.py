@@ -42,7 +42,7 @@ def torus(n: int, ambient_dim: int, rng: np.random.Generator):
             minor_radius * np.sin(v),
         )
     )
-    return _embed_high_dim(data, ambient_dim, rng), u
+    return _embed_high_dim(data, ambient_dim, rng), {"major": u, "minor": v}
 
 
 def cylinder(n: int, ambient_dim: int, rng: np.random.Generator):
@@ -50,7 +50,7 @@ def cylinder(n: int, ambient_dim: int, rng: np.random.Generator):
     height = rng.uniform(-1.5, 1.5, size=n)
     radius = 1.0
     data = np.column_stack((radius * np.cos(theta), radius * np.sin(theta), height))
-    return _embed_high_dim(data, ambient_dim, rng), theta
+    return _embed_high_dim(data, ambient_dim, rng), {"circle": theta}
 
 
 def _angle_alignment_score(recovered: np.ndarray, truth: np.ndarray) -> float:
@@ -59,8 +59,39 @@ def _angle_alignment_score(recovered: np.ndarray, truth: np.ndarray) -> float:
     return float(abs(np.mean(z_recovered * np.conjugate(z_truth))))
 
 
+def _angle_pair_correlation(first: np.ndarray, second: np.ndarray) -> float:
+    first_centered = np.exp(1j * first)
+    second_centered = np.exp(1j * second)
+    return float(abs(np.mean(first_centered * np.conjugate(second_centered))))
+
+
+def _two_best_candidates(result, max_pair_search: int = 12):
+    if len(result.candidates) < 2:
+        raise RuntimeError("Need at least two circular candidates for angle-square plots.")
+
+    pool = result.candidates[: min(max_pair_search, len(result.candidates))]
+    best_pair = None
+    best_score = np.inf
+    for i, first in enumerate(pool):
+        for second in pool[i + 1 :]:
+            correlation = _angle_pair_correlation(first.angle, second.angle)
+            score = (
+                first.reconstruction_error
+                + second.reconstruction_error
+                + correlation
+            )
+            if score < best_score:
+                best_score = score
+                best_pair = (first, second)
+    return best_pair
+
+
 def _plot_example(
-    name: str, data: np.ndarray, truth: np.ndarray, result, output_dir: Path
+    name: str,
+    data: np.ndarray,
+    truth_angles: dict[str, np.ndarray],
+    result,
+    output_dir: Path,
 ):
     output_dir.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("MPLCONFIGDIR", str(output_dir / ".matplotlib"))
@@ -70,31 +101,31 @@ def _plot_example(
         raise RuntimeError("This script needs matplotlib for plotting.") from exc
 
     pca = PCA(n_components=2).fit_transform(data)
-    score = _angle_alignment_score(result.angle, truth)
-    best = result.candidate
+    first, second = _two_best_candidates(result)
     top = result.candidates[: min(8, len(result.candidates))]
 
-    fig, axes = plt.subplots(1, 3, figsize=(13, 4), constrained_layout=True)
+    n_truth = len(truth_angles)
+    fig, axes = plt.subplots(
+        1, n_truth + 2, figsize=(4.2 * (n_truth + 2), 4), constrained_layout=True
+    )
 
     scatter = axes[0].scatter(
-        pca[:, 0], pca[:, 1], c=result.angle, s=10, cmap="hsv"
+        pca[:, 0], pca[:, 1], c=first.angle, s=10, cmap="hsv"
     )
-    axes[0].set_title(f"{name}: recovered angle")
+    axes[0].set_title(f"{name}: first coordinate")
     axes[0].set_xticks([])
     axes[0].set_yticks([])
     fig.colorbar(scatter, ax=axes[0], fraction=0.046)
 
-    axes[1].scatter(
-        result.coordinate_values[:, 0],
-        result.coordinate_values[:, 1],
-        c=truth,
-        s=10,
-        cmap="hsv",
-    )
-    axes[1].set_title("selected R2 coordinate")
-    axes[1].set_aspect("equal", adjustable="box")
-    axes[1].set_xticks([])
-    axes[1].set_yticks([])
+    for ax, (label, truth) in zip(axes[1 : 1 + n_truth], truth_angles.items()):
+        square = ax.scatter(first.angle, second.angle, c=truth, s=10, cmap="hsv")
+        ax.set_title(f"angle square: true {label}")
+        ax.set_xlim(0.0, 2.0 * np.pi)
+        ax.set_ylim(0.0, 2.0 * np.pi)
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_xlabel("coordinate 1 angle")
+        ax.set_ylabel("coordinate 2 angle")
+        fig.colorbar(square, ax=ax, fraction=0.046)
 
     labels = [str(candidate.index) for candidate in top]
     errors = [candidate.reconstruction_error for candidate in top]
@@ -102,20 +133,31 @@ def _plot_example(
         "#2878b5" if candidate.passed_hodge_filter else "#9a9a9a"
         for candidate in top
     ]
-    axes[2].bar(labels, errors, color=colors)
-    axes[2].set_title("1-form reconstruction error")
-    axes[2].set_xlabel("Hodge eigenform index")
-    axes[2].set_ylabel("relative norm")
+    score_ax = axes[-1]
+    score_ax.bar(labels, errors, color=colors)
+    score_ax.set_title("1-form reconstruction error")
+    score_ax.set_xlabel("Hodge eigenform index")
+    score_ax.set_ylabel("relative norm")
 
+    alignments = {
+        label: (
+            _angle_alignment_score(first.angle, truth),
+            _angle_alignment_score(second.angle, truth),
+        )
+        for label, truth in truth_angles.items()
+    }
+    alignment_text = ", ".join(
+        f"{label}=({score_1:.2f},{score_2:.2f})"
+        for label, (score_1, score_2) in alignments.items()
+    )
     fig.suptitle(
-        f"alignment={score:.3f}, best={best.index}, "
-        f"exact={best.exact_ratio:.2f}, coclosed={best.coclosed_ratio:.2f}"
+        f"candidates=({first.index}, {second.index}), alignments {alignment_text}"
     )
 
     path = output_dir / f"{name}_circular_coordinate.png"
     fig.savefig(path, dpi=180)
     plt.close(fig)
-    return path, score
+    return path, alignments, (first, second)
 
 
 def run(args):
@@ -126,7 +168,7 @@ def run(args):
     }
 
     summaries = []
-    for name, (data, truth) in examples.items():
+    for name, (data, truth_angles) in examples.items():
         dg = DiffusionGeometry.from_point_cloud(
             data,
             n_function_basis=args.n_function_basis,
@@ -135,13 +177,19 @@ def run(args):
             knn_bandwidth=args.knn_bandwidth,
         )
         result = circular_coordinates(dg, epsilon=args.epsilon, k=args.k)
-        path, score = _plot_example(name, data, truth, result, args.output_dir)
-        summaries.append((name, path, score, result.candidate))
+        path, alignments, candidates = _plot_example(
+            name, data, truth_angles, result, args.output_dir
+        )
+        summaries.append((name, path, alignments, candidates))
 
-    for name, path, score, candidate in summaries:
+    for name, path, alignments, candidates in summaries:
+        alignment_text = ", ".join(
+            f"{label}=({score_1:.3f},{score_2:.3f})"
+            for label, (score_1, score_2) in alignments.items()
+        )
         print(
-            f"{name}: saved {path} | alignment={score:.3f} | "
-            f"candidate={candidate.index} | error={candidate.reconstruction_error:.3f}"
+            f"{name}: saved {path} | candidates=({candidates[0].index}, "
+            f"{candidates[1].index}) | alignments {alignment_text}"
         )
 
 

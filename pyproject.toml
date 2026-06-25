@@ -13,6 +13,7 @@ dependencies = ["numpy", "scipy", "opt_einsum", "scikit-learn"]
 
 [project.optional-dependencies]
 test = ["pytest"]
+tda = ["ripser", "matplotlib", "h5py", "numba", "gudhi"]
 
 [tool.setuptools.packages.find]
 include = ["*"]
