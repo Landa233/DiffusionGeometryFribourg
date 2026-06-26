@@ -1,7 +1,18 @@
 import numpy as np
 
 from diffusion_geometry import DiffusionGeometry
+from TDA.synthetic.run_circular_coordinates import monomial_function_basis
 from methods.circular_coordinates import circular_coordinates
+
+
+def test_monomial_function_basis_degree_two_shape():
+    data = np.array([[1.0, 2.0], [3.0, 5.0], [7.0, 11.0]])
+
+    basis = monomial_function_basis(data, degree=2)
+
+    assert basis.shape == (3, 6)
+    assert np.allclose(basis[:, 0], 1.0)
+    assert np.isfinite(basis).all()
 
 
 def test_circular_coordinates_smoke_on_circle():
@@ -26,4 +37,8 @@ def test_circular_coordinates_smoke_on_circle():
     assert len(result.candidates) > 0
     assert np.isfinite(result.candidate.reconstruction_error)
     assert result.candidate.similarity > 0.0
-
+    filtered = [
+        candidate for candidate in result.candidates if candidate.passed_hodge_filter
+    ]
+    expected = filtered[0] if filtered else result.candidates[0]
+    assert result.candidate is expected

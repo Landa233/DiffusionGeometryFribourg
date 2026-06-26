@@ -19,3 +19,12 @@ dist/
 
 # Installers
 Miniconda3-latest-MacOSX-arm64.sh
+
+# Large datasets
+TDA/gardner2022/data/
+TDA/image_patches/data/
+
+# Generated TDA outputs
+TDA/gardner2022/output/
+TDA/image_patches/output/
+TDA/synthetic/output/

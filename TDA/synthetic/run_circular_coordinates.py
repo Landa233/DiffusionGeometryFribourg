@@ -2,7 +2,7 @@
 
 Examples
 --------
-python TDA/synthetic_circular_coordinates.py --n 400 --ambient-dim 8
+python TDA/synthetic/run_circular_coordinates.py --n 400 --ambient-dim 8
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import sys
 import numpy as np
 from opt_einsum import contract
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -329,7 +329,7 @@ def parse_args():
     parser.add_argument("--epsilon", type=float, default=1.0)
     parser.add_argument("--k", type=int, default=50)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--output-dir", type=Path, default=Path("TDA/output"))
+    parser.add_argument("--output-dir", type=Path, default=Path("TDA/synthetic/output"))
     return parser.parse_args()
 
 
